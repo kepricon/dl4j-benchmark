@@ -1,4 +1,4 @@
-# The train/test net protocol buffer definition
+ # The train/test net protocol buffer definition
 net: "dl4j-core-benchmark/src/main/java/org/deeplearning4j/Cifar10/caffe/caffe_cifar10_quick_train_test.prototxt"
 # test_iter specifies how many forward passes the test should carry out.
 # In the case of MNIST, we have test batch size 100 and 100 test iterations,

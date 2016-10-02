@@ -41,7 +41,7 @@ public class Dl4j_Cifar10 {
 
     // values to pass in from command line when compiled, esp running remotely
     @Option(name = "--modelType", usage = "Model type CAFFE_BATCH_NORM, CAFFE_FULL_SIGMOID, CAFFE_QUICK, TENSORFLOW_INFERENCE, TORCH_NIN, TORCH_VGG.", aliases = "-mT")
-    public String modelType = "TORCH_VGG";
+    public String modelType = "CAFFE_QUICK";
     @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
     public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
@@ -53,9 +53,9 @@ public class Dl4j_Cifar10 {
     @Option(name="--testBatchSize",usage="Test batch size.",aliases = "-nTestB")
     public int testBatchSize = 100;
     @Option(name="--epochs",usage="Number of epochs.",aliases = "-epochs")
-    public int epochs = 1;
+    public int epochs = 8;
     @Option(name="--preProcess",usage="Set preprocess.",aliases = "-pre")
-    public boolean preProcess = false;
+    public boolean preProcess = true;
 
     protected static int HEIGHT = 32;
     protected static int WIDTH = 32;
@@ -86,7 +86,7 @@ public class Dl4j_Cifar10 {
             case CAFFE_QUICK:
 //                trainBatchSize = 100;
 //                testBatchSize = 100;
-//                epochs = 1;
+//                epochs = 8;
                 nIn = null;
                 nOut = new int[]{32, 32, 64, 64};
                 activation = "relu";

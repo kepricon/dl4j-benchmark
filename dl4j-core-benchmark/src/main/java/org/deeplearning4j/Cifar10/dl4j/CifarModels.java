@@ -1,10 +1,7 @@
 package org.deeplearning4j.Cifar10.dl4j;
 
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.LearningRatePolicy;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.distribution.GaussianDistribution;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -75,7 +72,7 @@ public class CifarModels {
         this.updater = updater;
         this.lossFunctions = lossFunctions;
         this.learningRate = learningRate;
-        this.biasLearningRate = (biasLearningRate == Double.NaN)? learningRate: biasLearningRate;
+        this.biasLearningRate = (biasLearningRate == Double.NaN)? 0.0: biasLearningRate;
         this.regularization = regularization;
         this.l2 = l2;
         this.momentum = momentum;
@@ -93,7 +90,11 @@ public class CifarModels {
         return new ConvolutionLayer.Builder(new int[]{3,3}, new int[]{1,1}, new int[]{1,1}).name(name).nIn(nIn).nOut(out).activation("identity").dropOut(dropOut).build();
     }
 
-    private ConvolutionLayer conv5x5(String name, int nIn, int out, double std, int[] padding) {
+    private ConvolutionLayer conv5x5(String name, int out, double std, int[] padding) {
+        return new ConvolutionLayer.Builder(new int[]{5,5}, new int[]{1,1}, padding).name(name).nOut(out).dist(new GaussianDistribution(0, std)).build();
+    }
+
+    private ConvolutionLayer conv5x5nin(String name, int nIn, int out, double std, int[] padding) {
         return new ConvolutionLayer.Builder(new int[]{5,5}, new int[]{1,1}, padding).name(name).nIn(nIn).nOut(out).dist(new GaussianDistribution(0, std)).build();
     }
 
@@ -119,6 +120,10 @@ public class CifarModels {
 
     private SubsamplingLayer maxPool6x6(String name) {
         return new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[]{6, 6}, new int[]{1, 1}).name(name).build();
+    }
+
+    private SubsamplingLayer avgPool3x3(String name) {
+        return new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.AVG, new int[]{3, 3}, new int[]{2, 2}).name(name).build();
     }
 
     private LocalResponseNormalization lrn(String name, int k, double alpha, double beta, int n) {
@@ -151,23 +156,24 @@ public class CifarModels {
                 .iterations(iterations)
                 .activation(activation)
                 .weightInit(weightInit)
-                //.gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
+//                .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
                 .learningRate(learningRate).biasLearningRate(biasLearningRate)
                 .optimizationAlgo(optimizationAlgorithm)
                 .learningRate(learningRate).biasLearningRate(biasLearningRate)
                 .updater(updater).momentum(momentum)
                 .regularization(regularization).l2(l2)
                 .list()
-                .layer(0, conv5x5("cnn1", channels, nOut[0], 1e-4, new int[]{2,2}))
+                .layer(0, conv5x5nin("cnn1", channels, nOut[0], 1e-4, new int[]{2,2}))
                 .layer(1, maxPool3x3("pool1"))
-                .layer(2, conv5x5("cnn2", 0, nOut[1], 1e-2, new int[]{2,2}))
-                .layer(3, maxPool3x3("pool2"))
-                .layer(4, conv5x5("cnn3", 0, nOut[2], 1e-2, new int[]{2,2}))
-                .layer(5, maxPool3x3("pool3"))
+                .layer(2, conv5x5("cnn2", nOut[1], 1e-2, new int[]{2,2}))
+                .layer(3, avgPool3x3("pool2"))
+                .layer(4, conv5x5("cnn3", nOut[2], 1e-2, new int[]{2,2}))
+                .layer(5, avgPool3x3("pool3"))
                 .layer(6, denseNorm("ffn1", nOut[3], 0.5, 1e-2))
-                .layer(7, output("softmax", numLabels, 1e-2))
+                .layer(7, output("output", numLabels, 1e-2))
                 .backprop(true).pretrain(false)
                 .cnnInputSize(height, width, channels);
+//                .setInputType(InputType.convolutionalFlat(height,width,channels));
 
         return builder.build();
     }
@@ -184,16 +190,16 @@ public class CifarModels {
                 .updater(updater).momentum(momentum)
                 .regularization(regularization).l2(l2)
                 .list()
-                .layer(0, conv5x5("cnn1", channels, nOut[0], 1e-2, new int[]{2,2})) // TODO double check gaussian
+                .layer(0, conv5x5nin("cnn1", channels, nOut[0], 1e-2, new int[]{2,2})) // TODO double check gaussian
                 .layer(1, maxPool3x3("pool1"))
                 .layer(2, lrn("lrn1", 1, 5e-05, 0.75, 3))
-                .layer(3, conv5x5("cnn2", 0, nOut[1], 1e-2, new int[]{2,2}))
-                .layer(4, maxPool3x3("pool2"))
+                .layer(3, conv5x5("cnn2", nOut[1], 1e-2, new int[]{2,2}))
+                .layer(4, avgPool3x3("pool2"))
                 .layer(5, lrn("lrn1", 1, 5e-05, 0.75, 3))
-                .layer(6, conv5x5("cnn3", 0, nOut[2], 1e-2, new int[]{2,2}))
-                .layer(7, maxPool3x3("pool3"))
+                .layer(6, conv5x5("cnn3", nOut[2], 1e-2, new int[]{2,2}))
+                .layer(7, avgPool3x3("pool3"))
                 .layer(8, denseNorm("ffn1", nOut[3], 0.5, 1e-2))
-                .layer(9, output("softmax", numLabels, 1e-2))
+                .layer(9, output("output", numLabels, 1e-2))
                 .backprop(true).pretrain(false)
                 .cnnInputSize(height, width, channels);
         conf = builder.build();
@@ -222,12 +228,12 @@ public class CifarModels {
                 .layer(4, conv5x5act("cnn2", 0, nOut[1], 1e-2, new int[]{2,2}, "identity"))
                 .layer(5, new BatchNormalization.Builder().build())
                 .layer(6, new ActivationLayer.Builder().build())
-                .layer(7, maxPool3x3("pool2"))
+                .layer(7, avgPool3x3("pool2"))
                 .layer(8, conv5x5act("cnn3", 0, nOut[2], 1e-2, new int[]{2,2}, "identity"))
                 .layer(9, new BatchNormalization.Builder().build())
                 .layer(10, new ActivationLayer.Builder().build())
-                .layer(11, maxPool3x3("pool3"))
-                .layer(12, output("softmax", numLabels, 1e-2))
+                .layer(11, avgPool3x3("pool3"))
+                .layer(12, output("output", numLabels, 1e-2))
                 .backprop(true).pretrain(false)
                 .cnnInputSize(height, width, channels);
         conf = builder.build();
@@ -250,7 +256,7 @@ public class CifarModels {
                 .lrPolicyDecayRate(0.1)
                 .lrPolicySteps(136500) // TF does it every 136,500 iter with 1M cap
                 .list()
-                .layer(0, conv5x5("cnn1", channels, nOut[0], 5e-2, new int[]{0,0}))
+                .layer(0, conv5x5nin("cnn1", channels, nOut[0], 5e-2, new int[]{0,0}))
                 .layer(1, maxPool3x3("pool1"))
                 .layer(2, lrnBias("lrn1", 1, 0.001/9.0, 0.75, 4))
                 .layer(3, conv5x5bias("cnn2", channels, nOut[0], 5e-2, new int[]{0,0}, 0.1))
@@ -258,7 +264,7 @@ public class CifarModels {
                 .layer(5, maxPool3x3("pool2"))
                 .layer(6, denseL2Bias("ffn1", nOut[1], 4e-2, 0.1, 4e-3))
                 .layer(7, denseL2Bias("ffn2", nOut[2], 4e-2, 0.1, 4e-3))
-                .layer(8, output("softmax", numLabels, 1/192.0))
+                .layer(8, output("output", numLabels, 1/192.0))
                 .backprop(true).pretrain(false)
                 .cnnInputSize(height,width,channels);
         conf = builder.build();
@@ -312,7 +318,7 @@ public class CifarModels {
                 .layer(27, new BatchNormalization.Builder().eps(1e-3).build())
                 .layer(28, new ActivationLayer.Builder().build())
                 .layer(29, maxPool6x6("pool3"))
-                .layer(30, output("softmax", numLabels, 1/192.0))
+                .layer(30, output("output", numLabels, 1/192.0))
                 .backprop(true).pretrain(false)
                 .cnnInputSize(height,width,channels);
         conf = builder.build();
@@ -387,7 +393,7 @@ public class CifarModels {
                 .layer(45, new BatchNormalization.Builder().eps(1e-3).build())
                 .layer(46, new ActivationLayer.Builder().build())
                 .layer(47, dense("ffn2", nOut[14], 0.5))
-                .layer(48, output("softmax", numLabels, 1/192.0))
+                .layer(48, output("output", numLabels, 1/192.0))
                 .backprop(true).pretrain(false)
                 .cnnInputSize(height,width,channels);
 
