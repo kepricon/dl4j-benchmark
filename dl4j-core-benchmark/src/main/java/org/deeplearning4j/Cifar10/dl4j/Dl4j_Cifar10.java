@@ -41,7 +41,7 @@ public class Dl4j_Cifar10 {
 
     // values to pass in from command line when compiled, esp running remotely
     @Option(name = "--modelType", usage = "Model type CAFFE_BATCH_NORM, CAFFE_FULL_SIGMOID, CAFFE_QUICK, TENSORFLOW_INFERENCE, TORCH_NIN, TORCH_VGG.", aliases = "-mT")
-    public String modelType = "CAFFE_QUICK";
+    public String modelType = "CAFFE_FULL_SIGMOID";
     @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
     public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
@@ -81,7 +81,7 @@ public class Dl4j_Cifar10 {
     protected static MultiLayerNetwork network;
     protected boolean train = true;
 
-    public void setVaribales() {
+    public void setVariables() {
         switch (CifarModeEnum.valueOf(modelType)) {
             case CAFFE_QUICK:
 //                trainBatchSize = 100;
@@ -204,7 +204,7 @@ public class Dl4j_Cifar10 {
             parser.printUsage(System.err);
         }
 
-        setVaribales();
+        setVariables();
 
         log.debug("Load data...");
         ImageTransform flip = new FlipImageTransform(seed); // Should random flip some images but not all

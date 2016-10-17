@@ -70,7 +70,7 @@ public class AlexNetBVLC {
         InputSplit trainData = inputSplit[0];
         InputSplit testData = inputSplit[1];
 
-        ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, new ParentPathLabelGenerator(), 255);
+        ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, new ParentPathLabelGenerator());
         recordReader.initialize(trainData);
         DataSetIterator dataIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, numLabels);
         MultipleEpochsIterator trainIter = new MultipleEpochsIterator(epochs, dataIter);
