@@ -40,7 +40,32 @@
             </properties>
         </profile>
         <profile>
-            <id>cuda</id>
+            <id>cuda8</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <nd4j.backend>nd4j-cuda-8.0</nd4j.backend>
+            </properties>
+        </profile>
+        <profile>
+            <id>cudnn8</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <nd4j.backend>nd4j-cuda</nd4j.backend>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>deeplearning4j-cuda-8.0</artifactId>
+                    <version>${dl4j.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>cuda75</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -49,7 +74,7 @@
             </properties>
         </profile>
         <profile>
-            <id>cudnn</id>
+            <id>cudnn75</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -90,10 +115,13 @@
                 <artifactId>nd4j-cuda-7.5</artifactId>
                 <version>${nd4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.nd4j</groupId>
+                <artifactId>nd4j-cuda-8.0</artifactId>
+                <version>${nd4j.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
-
     <dependencies>
         <dependency>
             <groupId>org.deeplearning4j</groupId>
