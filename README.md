@@ -117,6 +117,5 @@ Note:
 ## *How to Help*
 Help is welcome to improve comparisons. If you know a better way or see a fix that is needed, please submit a pull request. Top of mind next steps that help would be appreciated:
 
-    - Confirm configurations for all frameworks (seeking outside reviews - esp. on Torch with gpus because timing appears high)
     - Compare LSTMs, Autoencoders, RBMs where available
     - Setup Dl4j AlexNet functionality with multiple GPUs for benchmark
