@@ -25,6 +25,7 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -96,7 +97,7 @@ public class MSRA_CFW {
     protected double splitTrainTest = 0.8;
 
     public void run(String[] args) throws Exception{
-        Nd4j.dtype = DataBuffer.Type.DOUBLE;
+        DataTypeUtil.setDTypeForContext(DataBuffer.Type.DOUBLE);
 
         // Parse command line arguments if they exist
         CmdLineParser parser = new CmdLineParser(this);

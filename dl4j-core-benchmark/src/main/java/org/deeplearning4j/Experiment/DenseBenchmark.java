@@ -28,7 +28,7 @@ public class DenseBenchmark {
                         .build())
                 .build();
 
-        int numParams = conf.getLayer().initializer().numParams(conf,true);
+        int numParams = conf.getLayer().initializer().numParams(conf);
         INDArray params = Nd4j.create(1, numParams);
 
         Layer layer = conf.getLayer().instantiate(conf, null, 0, params, true);
