@@ -4,12 +4,14 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 /**
@@ -39,7 +41,7 @@ public class LeNet {
         MultiLayerConfiguration.Builder conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
-                .activation("identity")
+                .activation(Activation.IDENTITY)
                 .weightInit(WeightInit.XAVIER)
                 .learningRate(1e-2)//.biasLearningRate(2e-2)
                 //.learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
@@ -64,16 +66,16 @@ public class LeNet {
                         .build())
                 .layer(4, new DenseLayer.Builder()
                         .name("ffn1")
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .nOut(500)
                         .build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .name("output")
                         .nOut(numLabels)
-                        .activation("softmax") // radial basis function required
+                        .activation(Activation.SOFTMAX) // radial basis function required
                         .build())
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height, width, channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
 
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf.build());

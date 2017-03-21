@@ -4,9 +4,11 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.GaussianDistribution;
-import org.deeplearning4j.nn.conf.layers.*;
+import org.deeplearning4j.nn.conf.layers.AutoEncoder;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -30,7 +32,7 @@ public class StackedAutEncoder {
         MultiLayerConfiguration.Builder conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
-                .activation("sigmoid")
+                .activation(Activation.SIGMOID)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new GaussianDistribution(0, 1))
                 .learningRate(1e-3) // TODO check lr
@@ -38,18 +40,18 @@ public class StackedAutEncoder {
                 .learningRateScoreBasedDecayRate(1e-1)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new AutoEncoder.Builder().lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .layer(0, new AutoEncoder.Builder().lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .nIn(batchSize)
                         .nOut(800)
                         .biasInit(0)
                         .build())
                 // TODO confirm loss and encoder and decoder nodes
-                .layer(1, new AutoEncoder.Builder().lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .layer(1, new AutoEncoder.Builder().lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .nIn(800)
                         .nOut(1000)
                         .biasInit(0)
                         .build())
-                .layer(2, new AutoEncoder.Builder().lossFunction(LossFunctions.LossFunction.RMSE_XENT)
+                .layer(2, new AutoEncoder.Builder().lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                         .nIn(1000)
                         .nOut(2000)
                         .biasInit(0)
@@ -57,7 +59,7 @@ public class StackedAutEncoder {
                 .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .nIn(2000)
                         .nOut(outputNum)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .weightInit(WeightInit.XAVIER)
                         .build())
                 .backprop(true)

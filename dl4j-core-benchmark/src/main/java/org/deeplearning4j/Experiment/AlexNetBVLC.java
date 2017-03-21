@@ -8,19 +8,20 @@ import org.datavec.api.util.ClassPathResource;
 import org.datavec.image.loader.NativeImageLoader;
 import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-
 import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
@@ -94,7 +95,7 @@ public class AlexNetBVLC {
                         .padding(0, 0)
                         .stride(4, 4)
                         .weightInit(WeightInit.RELU)
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[] {3,3}) // 55*55*96 => 27*27*96
                         .padding(0, 0)
@@ -106,7 +107,7 @@ public class AlexNetBVLC {
                         .padding(2, 2)
                         .stride(1, 1)
                         .weightInit(WeightInit.RELU)
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[] {3,3}) // 27*27*256 => 13*13*256
                         .padding(0, 0)
@@ -118,7 +119,7 @@ public class AlexNetBVLC {
                         .padding(1, 1)
                         .stride(1, 1)
                         .weightInit(WeightInit.RELU)
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .build())
                 .layer(5, new ConvolutionLayer.Builder(3, 3) // 13*13*384 => 13*13*384
                         .nIn(channels)
@@ -126,7 +127,7 @@ public class AlexNetBVLC {
                         .padding(1, 1)
                         .stride(1, 1)
                         .weightInit(WeightInit.RELU)
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .build())
                 .layer(6, new ConvolutionLayer.Builder(3, 3) // 13*13*384 => 13*13*256
                         .nIn(channels)
@@ -134,27 +135,28 @@ public class AlexNetBVLC {
                         .padding(1, 1)
                         .stride(1, 1)
                         .weightInit(WeightInit.RELU)
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .build())
                 .layer(7, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[]{3, 3}) // 13*13*256 => 7*7*256
                         .padding(0, 0)
                         .stride(2, 2)
                         .build())
-                .layer(8, new DenseLayer.Builder().activation("relu")
+                .layer(8, new DenseLayer.Builder().activation(Activation.RELU)
                         .nOut(4096)
                         .dropOut(0.5)
                         .build())
-                .layer(9, new DenseLayer.Builder().activation("relu")
+                .layer(9, new DenseLayer.Builder().activation(Activation.RELU)
                         .nOut(4096)
                         .dropOut(0.5)
                         .build())
                 .layer(10, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT)
                         .nOut(numLabels)
                         .weightInit(WeightInit.RELU)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .updater(Updater.SGD)
                         .build())
-                .backprop(true).pretrain(false).cnnInputSize(height, width, channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
 
         MultiLayerConfiguration conf = builder.build();
 

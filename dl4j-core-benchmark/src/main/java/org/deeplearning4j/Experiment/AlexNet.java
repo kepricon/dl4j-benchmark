@@ -4,9 +4,11 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.distribution.GaussianDistribution;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
+import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 
@@ -54,7 +56,7 @@ public class AlexNet {
                 .seed(seed)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(0.0, 0.01))
-                .activation("relu")
+                .activation(Activation.RELU)
                 .updater(Updater.NESTEROVS)
                 .iterations(iterations)
                 .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer) // normalize to prevent vanishing or exploding gradients
@@ -126,11 +128,11 @@ public class AlexNet {
                 .layer(12, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .name("output")
                         .nOut(numLabels)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .build())
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
                 .backprop(true)
-                .pretrain(false)
-                .cnnInputSize(height,width,channels);
+                .pretrain(false);
 
         return conf.build();
     }

@@ -4,6 +4,7 @@ import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -25,7 +26,7 @@ public class CNNBenchmark {
                         .nIn(channel)
                         .nOut(kernels)
                         .weightInit(WeightInit.DISTRIBUTION).dist(new NormalDistribution(0, 0.1))
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .kernelSize(2,2)
                         .stride(1,1)
                         .padding(1,1)
