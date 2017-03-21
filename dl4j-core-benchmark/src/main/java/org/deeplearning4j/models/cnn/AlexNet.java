@@ -1,9 +1,10 @@
-package org.deeplearning4j.Experiment;
+package org.deeplearning4j.models.cnn;
 
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.distribution.GaussianDistribution;
 import org.deeplearning4j.nn.conf.distribution.NormalDistribution;
+import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -130,7 +131,7 @@ public class AlexNet {
                         .build())
                 .backprop(true)
                 .pretrain(false)
-                .cnnInputSize(height,width,channels);
+                .setInputType(InputType.convolutional(height,width,channels));
 
         return conf.build();
     }

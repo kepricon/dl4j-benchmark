@@ -1,0 +1,69 @@
+package org.deeplearning4j.models.cnn;
+
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
+import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
+import sun.rmi.server.Activation;
+
+/**
+ * VGG-16
+ */
+public class VGG16 {
+
+    protected static int height;
+    protected static int width;
+    protected static int channels;
+    private int numLabels;
+    private long seed;
+    private int iterations;
+
+    public VGG16(int height, int width, int channels, int numLabels, long seed, int iterations) {
+        this.height = height;
+        this.width = width;
+        this.channels = channels;
+        this.numLabels = numLabels;
+        this.seed = seed;
+        this.iterations = iterations;
+    }
+
+    public static MultiLayerConfiguration conf() {
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().activation(Activation.RELU).list()
+                .layer(0,
+                        new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nIn(3).nOut(64)
+                                .build())
+                .layer(1, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(64).build())
+                .layer(2,
+                        new SubsamplingLayer.Builder().poolingType(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2)
+                                .stride(2, 2).build())
+                .layer(3, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(128).build())
+                .layer(4, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(128).build())
+                .layer(5,
+                        new SubsamplingLayer.Builder().poolingType(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2)
+                                .stride(2, 2).build())
+                .layer(6, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(256).build())
+                .layer(7, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(256).build())
+                .layer(8, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(256).build())
+                .layer(9,
+                        new SubsamplingLayer.Builder().poolingType(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2)
+                                .stride(2, 2).build())
+                .layer(10, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(512).build())
+                .layer(11, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(512).build())
+                .layer(12, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(512).build())
+                .layer(13,
+                        new SubsamplingLayer.Builder().poolingType(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2)
+                                .stride(2, 2).build())
+                .layer(14, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(512).build())
+                .layer(15, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(512).build())
+                .layer(16, new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nOut(512).build())
+                .layer(17, new SubsamplingLayer.Builder().poolingType(SubsamplingLayer.PoolingType.MAX).kernelSize(2, 2)
+                        .stride(2, 2).build())
+                .backprop(true)
+                .pretrain(false)
+                .setInputType(InputType.convolutional(height, width, channels)).build();
+
+        return conf;
+    }
+
+}
