@@ -7,6 +7,7 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -17,6 +18,7 @@ import org.deeplearning4j.parallelism.ParallelWrapper;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -149,7 +151,7 @@ public class Dl4j_2Main {
             int hiddenNodes = 1000;
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(seed)
-                    .activation("relu")
+                    .activation(Activation.RELU)
                     .weightInit(WeightInit.XAVIER)
                     .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                     .iterations(1)
@@ -164,7 +166,7 @@ public class Dl4j_2Main {
                     .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                             .nIn(hiddenNodes)
                             .nOut(numLabels)
-                            .activation("softmax")
+                            .activation(Activation.SOFTMAX)
                             .build())
                     .pretrain(false).backprop(true)
                     .build();
@@ -180,7 +182,7 @@ public class Dl4j_2Main {
             MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                     .seed(seed)
                     .iterations(1)
-                    .activation("identity")
+                    .activation(Activation.IDENTITY)
                     .weightInit(WeightInit.XAVIER)
                     .learningRate(learningRate)//.biasLearningRate(2e-2)
                     //.learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
@@ -192,11 +194,11 @@ public class Dl4j_2Main {
                     .layer(1, maxPool2x2("maxpool1"))
                     .layer(2, conv5x5("cnn2", 0, ccn2Depth))
                     .layer(3, maxPool2x2("maxpool2"))
-                    .layer(4, new DenseLayer.Builder().name("ffn1").activation("relu").nOut(ffn1Depth).build())
+                    .layer(4, new DenseLayer.Builder().name("ffn1").activation(Activation.RELU).nOut(ffn1Depth).build())
                     .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                            .name("output").nOut(numLabels).activation("softmax").build())
-                    .backprop(true).pretrain(false)
-                    .cnnInputSize(height, width, channels).build();
+                            .name("output").nOut(numLabels).activation(Activation.SOFTMAX).build())
+                    .setInputType(InputType.convolutionalFlat(height,width,channels))
+                    .backprop(true).pretrain(false).build();
 
             network = new MultiLayerNetwork(conf);
             network.init();
