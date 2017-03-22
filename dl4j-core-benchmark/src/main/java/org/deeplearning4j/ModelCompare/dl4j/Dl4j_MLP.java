@@ -1,8 +1,5 @@
 package org.deeplearning4j.ModelCompare.dl4j;
 
-import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
-import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
-import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -11,17 +8,8 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
-import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.text.DecimalFormat;
 
 /**
  *
@@ -52,7 +40,7 @@ public class Dl4j_MLP {
         int hiddenNodes = 1000;
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .activation("relu")
+                .activation(Activation.RELU)
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .iterations(1)
@@ -67,7 +55,7 @@ public class Dl4j_MLP {
                 .layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD)
                         .nIn(hiddenNodes)
                         .nOut(numLabels)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .build())
                 .pretrain(false).backprop(true)
                 .build();

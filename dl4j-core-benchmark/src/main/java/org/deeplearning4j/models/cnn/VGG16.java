@@ -1,16 +1,18 @@
 package org.deeplearning4j.models.cnn;
 
+import org.deeplearning4j.models.TestableModel;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
-import sun.rmi.server.Activation;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.nd4j.linalg.activations.Activation;
 
 /**
  * VGG-16
  */
-public class VGG16 {
+public class VGG16 implements TestableModel {
 
     protected static int height;
     protected static int width;
@@ -28,7 +30,7 @@ public class VGG16 {
         this.iterations = iterations;
     }
 
-    public static MultiLayerConfiguration conf() {
+    public MultiLayerConfiguration conf() {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().activation(Activation.RELU).list()
                 .layer(0,
                         new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(1, 1).nIn(3).nOut(64)
@@ -64,6 +66,13 @@ public class VGG16 {
                 .setInputType(InputType.convolutional(height, width, channels)).build();
 
         return conf;
+    }
+
+    public MultiLayerNetwork init(){
+        MultiLayerNetwork network = new MultiLayerNetwork(conf());
+        network.init();
+        return network;
+
     }
 
 }

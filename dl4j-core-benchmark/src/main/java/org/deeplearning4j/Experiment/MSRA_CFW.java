@@ -7,7 +7,6 @@ import org.datavec.api.split.InputSplit;
 import org.datavec.image.loader.BaseImageLoader;
 import org.datavec.image.loader.NativeImageLoader;
 import org.datavec.image.recordreader.ImageRecordReader;
-
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.eval.Evaluation;
@@ -24,13 +23,14 @@ import org.deeplearning4j.optimize.listeners.ParamAndGradientIterationListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataBuffer;
+import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.util.Arrays;
@@ -96,7 +96,7 @@ public class MSRA_CFW {
     protected double splitTrainTest = 0.8;
 
     public void run(String[] args) throws Exception{
-        Nd4j.dtype = DataBuffer.Type.DOUBLE;
+        DataTypeUtil.setDTypeForContext(DataBuffer.Type.DOUBLE);
 
         // Parse command line arguments if they exist
         CmdLineParser parser = new CmdLineParser(this);
@@ -142,7 +142,7 @@ public class MSRA_CFW {
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
-                .activation(activation)
+                .activation(Activation.fromString(activation))
                 .weightInit(weightInit)
                 .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -210,14 +210,14 @@ public class MSRA_CFW {
                 .layer(12, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .name("output")
                         .nOut(numLabels)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .build())
 
                 // TensorFlow
 //                .list()
 //                .layer(0, new ConvolutionLayer.Builder(5, 5)
 //                        .name("cnn1")
-//                        .nIn(CHANNELS)
+//                        .nIn(channels)
 //                        .dist(new NormalDistribution(0, 1e-4))
 //                        .stride(1, 1)
 //                        .padding(2, 2)
@@ -260,7 +260,7 @@ public class MSRA_CFW {
 //                .list(11)
 //                .layer(0, new ConvolutionLayer.Builder(7, 7)
 //                        .name("cnn1")
-//                        .nIn(CHANNELS)
+//                        .nIn(channels)
 //                        .nOut(96)
 //                        .build())
 //                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX, new int[]{3, 3})

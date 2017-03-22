@@ -9,6 +9,7 @@ import org.deeplearning4j.nn.conf.inputs.InvalidInputTypeException;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 /**
@@ -79,15 +80,15 @@ public class CifarModels {
     }
 
     private ConvolutionLayer conv1x1act(String name, int out, double std, int[] padding, String activation) {
-        return new ConvolutionLayer.Builder(new int[]{1,1}, new int[]{1,1}, padding).name(name).nOut(out).activation(activation).dist(new GaussianDistribution(0, std)).build();
+        return new ConvolutionLayer.Builder(new int[]{1,1}, new int[]{1,1}, padding).name(name).nOut(out).activation(Activation.fromString(activation)).dist(new GaussianDistribution(0, std)).build();
     }
 
     private ConvolutionLayer conv3x3act(String name, int nIn, int out) {
-        return new ConvolutionLayer.Builder(new int[]{3,3}, new int[]{1,1}, new int[]{1,1}).name(name).nIn(nIn).nOut(out).activation("identity").build();
+        return new ConvolutionLayer.Builder(new int[]{3,3}, new int[]{1,1}, new int[]{1,1}).name(name).nIn(nIn).nOut(out).activation(Activation.IDENTITY).build();
     }
 
     private ConvolutionLayer conv3x3dropact(String name, int nIn, int out, double dropOut) {
-        return new ConvolutionLayer.Builder(new int[]{3,3}, new int[]{1,1}, new int[]{1,1}).name(name).nIn(nIn).nOut(out).activation("identity").dropOut(dropOut).build();
+        return new ConvolutionLayer.Builder(new int[]{3,3}, new int[]{1,1}, new int[]{1,1}).name(name).nIn(nIn).nOut(out).activation(Activation.IDENTITY).dropOut(dropOut).build();
     }
 
     private ConvolutionLayer conv5x5(String name, int out, double std, int[] padding) {
@@ -99,7 +100,7 @@ public class CifarModels {
     }
 
     private ConvolutionLayer conv5x5act(String name, int nIn, int out, double std, int[] padding, String activation) {
-        return new ConvolutionLayer.Builder(new int[]{5,5}, new int[]{1,1}, padding).name(name).nIn(nIn).nOut(out).activation(activation).dist(new GaussianDistribution(0, std)).build();
+        return new ConvolutionLayer.Builder(new int[]{5,5}, new int[]{1,1}, padding).name(name).nIn(nIn).nOut(out).activation(Activation.fromString(activation)).dist(new GaussianDistribution(0, std)).build();
     }
 
     private ConvolutionLayer conv5x5bias(String name, int nIn, int out, double std, int[] padding, double biasInit) {
@@ -107,7 +108,7 @@ public class CifarModels {
     }
 
     private ConvolutionLayer conv5x5dropact(String name, int out, double std, int[] padding, String activation) {
-        return new ConvolutionLayer.Builder(new int[]{5,5}, new int[]{1,1}, padding).name(name).nOut(out).activation(activation).dropOut(0.5).dist(new GaussianDistribution(0, std)).build();
+        return new ConvolutionLayer.Builder(new int[]{5,5}, new int[]{1,1}, padding).name(name).nOut(out).activation(Activation.fromString(activation)).dropOut(0.5).dist(new GaussianDistribution(0, std)).build();
     }
 
     private SubsamplingLayer maxPool2x2(String name) {
@@ -147,7 +148,7 @@ public class CifarModels {
     }
 
     private OutputLayer output(String name, int nout, double std) {
-        return new OutputLayer.Builder(lossFunctions).name(name).activation("softmax").nOut(nout).dist(new GaussianDistribution(0, std)).build();
+        return new OutputLayer.Builder(lossFunctions).name(name).activation(Activation.SOFTMAX).nOut(nout).dist(new GaussianDistribution(0, std)).build();
     }
 
     public MultiLayerConfiguration caffeInitQuick() {
@@ -171,9 +172,8 @@ public class CifarModels {
                 .layer(5, avgPool3x3("pool3"))
                 .layer(6, denseNorm("ffn1", nOut[3], 0.5, 1e-2))
                 .layer(7, output("output", numLabels, 1e-2))
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height, width, channels);
-//                .setInputType(InputType.convolutionalFlat(height,width,channels));
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
 
         return builder.build();
     }
@@ -183,7 +183,7 @@ public class CifarModels {
                 .seed(seed)
                 .iterations(iterations)
                 .weightInit(weightInit).dist(new GaussianDistribution(0, 1e-4))
-                .activation(activation)
+                .activation(Activation.fromString(activation))
 //                .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
                 .optimizationAlgo(optimizationAlgorithm)
                 .learningRate(learningRate).biasLearningRate(biasLearningRate)
@@ -200,8 +200,8 @@ public class CifarModels {
                 .layer(7, avgPool3x3("pool3"))
                 .layer(8, denseNorm("ffn1", nOut[3], 0.5, 1e-2))
                 .layer(9, output("output", numLabels, 1e-2))
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height, width, channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
         conf = builder.build();
         return conf;
     }
@@ -210,7 +210,7 @@ public class CifarModels {
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
-                .activation(activation)
+                .activation(Activation.fromString(activation))
                 .weightInit(weightInit).dist(new GaussianDistribution(0, 1e-4))
                 //.gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
                 .learningRateDecayPolicy(LearningRatePolicy.Step)
@@ -234,8 +234,8 @@ public class CifarModels {
                 .layer(10, new ActivationLayer.Builder().build())
                 .layer(11, avgPool3x3("pool3"))
                 .layer(12, output("output", numLabels, 1e-2))
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height, width, channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
         conf = builder.build();
         return conf;
     }
@@ -243,7 +243,7 @@ public class CifarModels {
     public MultiLayerConfiguration tensorflowInference(){
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .activation(activation)
+                .activation(Activation.fromString(activation))
                 .updater(updater)
                 .weightInit(weightInit).dist(new NormalDistribution(0, 5e-2))
                 .iterations(iterations)
@@ -265,8 +265,8 @@ public class CifarModels {
                 .layer(6, denseL2Bias("ffn1", nOut[1], 4e-2, 0.1, 4e-3))
                 .layer(7, denseL2Bias("ffn2", nOut[2], 4e-2, 0.1, 4e-3))
                 .layer(8, output("output", numLabels, 1/192.0))
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height,width,channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
         conf = builder.build();
         return conf;
 
@@ -276,7 +276,7 @@ public class CifarModels {
 
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .activation(activation)
+                .activation(Activation.fromString(activation))
                 .updater(updater)
                 .weightInit(weightInit).dist(new NormalDistribution(0, 0.5))
                 .iterations(iterations)
@@ -319,8 +319,8 @@ public class CifarModels {
                 .layer(28, new ActivationLayer.Builder().build())
                 .layer(29, maxPool6x6("pool3"))
                 .layer(30, output("output", numLabels, 1/192.0))
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height,width,channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
         conf = builder.build();
         return conf;
 
@@ -330,7 +330,7 @@ public class CifarModels {
     public MultiLayerConfiguration torchInitVGG() {
         MultiLayerConfiguration.Builder builder = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .activation(activation)
+                .activation(Activation.fromString(activation))
                 .updater(updater)
                 .weightInit(weightInit)
                 .iterations(iterations)
@@ -394,8 +394,8 @@ public class CifarModels {
                 .layer(46, new ActivationLayer.Builder().build())
                 .layer(47, dense("ffn2", nOut[14], 0.5))
                 .layer(48, output("output", numLabels, 1/192.0))
-                .backprop(true).pretrain(false)
-                .cnnInputSize(height,width,channels);
+                .setInputType(InputType.convolutionalFlat(height,width,channels))
+                .backprop(true).pretrain(false);
 
         conf = builder.build();
         return conf;

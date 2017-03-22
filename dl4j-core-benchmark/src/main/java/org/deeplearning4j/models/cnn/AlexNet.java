@@ -8,6 +8,7 @@ import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 
@@ -55,7 +56,7 @@ public class AlexNet {
                 .seed(seed)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(0.0, 0.01))
-                .activation("relu")
+                .activation(Activation.RELU)
                 .updater(Updater.NESTEROVS)
                 .iterations(iterations)
                 .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer) // normalize to prevent vanishing or exploding gradients

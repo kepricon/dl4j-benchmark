@@ -18,13 +18,14 @@
     <description>Examples of training different data sets</description>
 
     <properties>
-        <dl4j.version>0.7.0</dl4j.version>
-        <nd4j.version>0.7.0</nd4j.version>
-        <datavec.version>0.7.0</datavec.version>
+        <dl4j.version>0.8.0</dl4j.version>
+        <nd4j.version>0.8.0</nd4j.version>
+        <datavec.version>0.8.0</datavec.version>
         <jackson.version>2.4.4</jackson.version>
         <scala.version>2.11.6</scala.version>
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
+        <scala.binary.version>2.11</scala.binary.version>
     </properties>
 
 
@@ -35,8 +36,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <dl4j.backend>deeplearning4j-core</dl4j.backend>
-                <nd4j.backend>nd4j-native</nd4j.backend>
+                <nd4j.backend>nd4j-native-platform</nd4j.backend>
             </properties>
         </profile>
         <profile>
@@ -45,7 +45,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <nd4j.backend>nd4j-cuda-8.0</nd4j.backend>
+                <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend>
             </properties>
         </profile>
         <profile>
@@ -54,37 +54,12 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <nd4j.backend>nd4j-cuda</nd4j.backend>
+                <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.deeplearning4j</groupId>
                     <artifactId>deeplearning4j-cuda-8.0</artifactId>
-                    <version>${dl4j.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>cuda75</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <nd4j.backend>nd4j-cuda-7.5</nd4j.backend>
-            </properties>
-        </profile>
-        <profile>
-            <id>cudnn75</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <nd4j.backend>nd4j-cuda-7.5</nd4j.backend>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.deeplearning4j</groupId>
-                    <artifactId>deeplearning4j-cuda-7.5</artifactId>
                     <version>${dl4j.version}</version>
                 </dependency>
             </dependencies>
@@ -112,12 +87,12 @@
             </dependency>
             <dependency>
                 <groupId>org.nd4j</groupId>
-                <artifactId>nd4j-cuda-7.5</artifactId>
+                <artifactId>nd4j-cuda-7.5-platform</artifactId>
                 <version>${nd4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.nd4j</groupId>
-                <artifactId>nd4j-cuda-8.0</artifactId>
+                <artifactId>nd4j-cuda-8.0-platform</artifactId>
                 <version>${nd4j.version}</version>
             </dependency>
         </dependencies>
@@ -130,12 +105,13 @@
         </dependency>
         <dependency>
             <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-ui</artifactId>
+            <artifactId>deeplearning4j-ui_${scala.binary.version}</artifactId>
             <version>${dl4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.nd4j</groupId>
             <artifactId>${nd4j.backend}</artifactId>
+            <version>${nd4j.version}</version>
         </dependency>
     </dependencies>
 

@@ -9,6 +9,7 @@ import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -43,13 +44,13 @@ public class GravesLSTMTest {
                         .nIn(nIn)
                         .nOut(layerSize)
                         .weightInit(WeightInit.DISTRIBUTION).dist(new NormalDistribution(0, 0.1))
-                        .activation("tanh")
+                        .activation(Activation.TANH)
                         .build())
                 .layer(1, new GravesLSTM.Builder()
                         .nIn(layerSize)
                         .nOut(layerSize)
-                        .activation("tanh").build())
-                .layer(2, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MCXENT).activation("softmax")        //MCXENT + softmax for classification
+                        .activation(Activation.TANH).build())
+                .layer(2, new RnnOutputLayer.Builder(LossFunctions.LossFunction.MCXENT).activation(Activation.SOFTMAX)        //MCXENT + softmax for classification
                         .nIn(layerSize)
                         .nOut(outputNum).build())
                 .backpropType(BackpropType.TruncatedBPTT).tBPTTForwardLength(timeSeriesLength).tBPTTBackwardLength(timeSeriesLength)
