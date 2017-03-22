@@ -20,6 +20,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Map;
 
 /**
  * Benchmarks popular CNN models using the CIFAR-10 dataset.
@@ -62,7 +63,7 @@ public class BenchmarkCifar {
     protected static int listenerFreq = 1;
     protected static int iterations = 1
             ;
-    protected static MultiLayerNetwork[] networks;
+    protected static Map<ModelType,MultiLayerNetwork> networks;
     protected boolean train = true;
 
     // memory management optimizations
@@ -97,12 +98,12 @@ public class BenchmarkCifar {
 
         log.debug("Build model....");
         networks = ModelSelector.select(ModelType.valueOf(modelType),height, width, channels, numLabels, seed, iterations);
-        for(int i = 0; i < networks.length; i++) networks[i].setListeners(new ScoreIterationListener(listenerFreq));
+        for (Map.Entry<ModelType, MultiLayerNetwork> net : networks.entrySet()) net.getValue().setListeners(new ScoreIterationListener(listenerFreq));
 
         log.debug("Train models...");
         long trainTime = System.currentTimeMillis();
-        for(int i = 0; i < networks.length; i++) {
-            networks[i].fit(iter);
+        for (Map.Entry<ModelType, MultiLayerNetwork> net : networks.entrySet()) {
+            net.getValue().fit(iter);
         }
         trainTime = System.currentTimeMillis() - trainTime;
 
@@ -111,10 +112,12 @@ public class BenchmarkCifar {
         cifar.test(numTestExamples, testBatchSize);
         epochs = 1;
         iter = new MultipleEpochsIterator(epochs, cifar);
-        Evaluation eval = network.evaluate(iter);
-        log.debug(eval.stats(true));
-        DecimalFormat df = new DecimalFormat("#.####");
-        log.info(df.format(eval.accuracy()));
+        for (Map.Entry<ModelType, MultiLayerNetwork> net : networks.entrySet()) {
+            Evaluation eval = net.getValue().evaluate(iter);
+            DecimalFormat df = new DecimalFormat("#.####");
+            log.debug(eval.stats(true));
+            log.info(df.format(eval.accuracy()));
+        }
         testTime =  System.currentTimeMillis() - testTime;
         totalTime = System.currentTimeMillis() - totalTime;
 
