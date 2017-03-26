@@ -64,7 +64,10 @@ public class BenchmarkListener implements IterationListener {
         if (iterationCount.get() == null)
             iterationCount.set(new AtomicLong(0));
 
-        if (iterationCount.get().getAndIncrement() % frequency == 0) {
+        if(iterationCount.get().get() <= 3*frequency)
+            lastTime.set(System.currentTimeMillis());
+
+        if (iterationCount.get().getAndIncrement() % frequency == 0 && iterationCount.get().get() > 3*frequency) {
             long currentTime = System.currentTimeMillis();
 
             long timeSpent = currentTime - lastTime.get();

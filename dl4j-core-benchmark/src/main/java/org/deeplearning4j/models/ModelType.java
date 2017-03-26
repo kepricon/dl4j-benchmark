@@ -10,5 +10,6 @@ public enum ModelType {
     GOOGLELENET,
     VGG16,
     INCEPTIONRESNETV1,
+    FACENETNN4,
     RNN
 }

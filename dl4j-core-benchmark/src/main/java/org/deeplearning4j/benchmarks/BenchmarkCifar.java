@@ -5,73 +5,50 @@ import org.datavec.image.loader.CifarLoader;
 import org.datavec.image.transform.FlipImageTransform;
 import org.datavec.image.transform.ImageTransform;
 import org.deeplearning4j.datasets.iterator.impl.CifarDataSetIterator;
-import org.deeplearning4j.listeners.BenchmarkListener;
-import org.deeplearning4j.listeners.BenchmarkReport;
-import org.deeplearning4j.models.ModelSelector;
 import org.deeplearning4j.models.ModelType;
-import org.deeplearning4j.models.TestableModel;
-import org.deeplearning4j.nn.api.Model;
-import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.nd4j.jita.conf.CudaEnvironment;
-import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * Benchmarks popular CNN models using the CIFAR-10 dataset.
  */
 @Slf4j
-public class BenchmarkCifar {
+public class BenchmarkCifar extends BaseBenchmark {
 
     // values to pass in from command line when compiled, esp running remotely
-    @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-mT")
-    public String modelType = "INCEPTIONRESNETV1";
-//    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
+    @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-model")
+    public static ModelType modelType = ModelType.ALEXNET;
+    //    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
 //    public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
-    public int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES;
-    @Option(name="--numTestExamples",usage="Num test examples.",aliases = "-nTest")
-    public int numTestExamples = CifarLoader.NUM_TEST_IMAGES;
+    public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES;
     @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
-    public int trainBatchSize = 125;
-    @Option(name="--testBatchSize",usage="Test batch size.",aliases = "-nTestB")
-    public int testBatchSize = 125;
-    @Option(name="--epochs",usage="Number of epochs.",aliases = "-epochs")
-    public int epochs = 8;
+    public static int trainBatchSize = 125;
     @Option(name="--preProcess",usage="Set preprocess.",aliases = "-pre")
-    public boolean preProcess = true;
+    public static boolean preProcess = true;
     @Option(name="--deviceCache",usage="Set CUDA device cache.",aliases = "-dcache")
-    public long deviceCache = 6L;
+    public static long deviceCache = 6L;
     @Option(name="--hostCache",usage="Set CUDA host cache.",aliases = "-hcache")
-    public long hostCache = 12L;
+    public static long hostCache = 12L;
     @Option(name="--gcThreads",usage="Set Garbage Collection threads.",aliases = "-gcthreads")
-    public int gcThreads = 5;
+    public static int gcThreads = 4;
     @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
-    public int gcWindow = 110;
-
-    protected static int height = 160;
-    protected static int width = 160;
-    protected static int channels = 3;
-    protected static int numLabels = CifarLoader.NUM_LABELS;
-
-    protected static int seed = 42;
-    protected static int listenerFreq = 10;
-    protected static int iterations = 1
-            ;
-    protected static Map<ModelType,TestableModel> networks;
-    protected boolean train = true;
+    public static int gcWindow = 300;
 
 
-    public void run(String[] args) throws IOException {
-        long totalTime = System.currentTimeMillis();
 
+    protected int height = 224;
+    protected int width = 224;
+    protected int channels = 3;
+    protected int numLabels = CifarLoader.NUM_LABELS;
+    protected String datasetName  = "CIFAR-10";
+    protected int seed = 42;
+
+    public void run(String[] args) {
         // Parse command line arguments if they exist
         CmdLineParser parser = new CmdLineParser(this);
         try {
@@ -80,10 +57,6 @@ public class BenchmarkCifar {
             // handling of wrong arguments
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
-        }
-
-        if(modelType == "ALL" || modelType == "RNN") {
-            throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
         }
 
         // memory management optimizations
@@ -97,63 +70,14 @@ public class BenchmarkCifar {
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
         Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
-        /*
-        Primary benchmarking happens from here
-         */
+        if(modelType == ModelType.ALL || modelType == ModelType.RNN)
+            throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
+
         log.info("Loading data...");
         ImageTransform flip = new FlipImageTransform(seed); // Should random flip some images but not all
-        CifarDataSetIterator cifar = new CifarDataSetIterator(trainBatchSize, numTrainExamples, new int[]{height, width, channels}, numLabels, flip, preProcess, train);
+        DataSetIterator cifar = new CifarDataSetIterator(trainBatchSize, numTrainExamples, new int[]{height, width, channels}, numLabels, flip, preProcess, train);
 
-        log.info("Building models for "+modelType+"....");
-        networks = ModelSelector.select(ModelType.valueOf(modelType),height, width, channels, numLabels, seed, iterations);
-
-        log.info("========================================");
-        log.info("===== Benchmarking selected models =====");
-        log.info("========================================");
-        for (Map.Entry<ModelType, TestableModel> net : networks.entrySet()) {
-            String dimensions = "CIFAR-10 "+trainBatchSize+"x"+channels+"x"+height+"x"+width;
-            log.info("Selected: "+net.getKey().toString()+" "+dimensions);
-
-            Model model = net.getValue().init();
-            BenchmarkReport report = new BenchmarkReport(net.getKey().toString(), dimensions);
-            report.setModel(model);
-
-            model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
-
-            log.info("===== Benchmarking training iteration =====");
-            if(model instanceof MultiLayerNetwork)
-                ((MultiLayerNetwork) model).fit(cifar);
-            if(model instanceof ComputationGraph)
-                ((ComputationGraph) model).fit(cifar);
-
-            log.info("===== Benchmarking forward pass =====");
-            cifar.reset(); // prevents NPE
-            long nIterations = 1000;
-            INDArray input = cifar.next().getFeatures();
-            if(model instanceof MultiLayerNetwork) {
-                ((MultiLayerNetwork) model).setInput(input);
-            }
-            if(model instanceof ComputationGraph) {
-                ((ComputationGraph) model).setInput(0, input);
-            }
-
-            long forwardTime = System.currentTimeMillis();
-            for (int i = 0; i < nIterations; i++) {
-                if(model instanceof MultiLayerNetwork)
-                    ((MultiLayerNetwork) model).feedForward();
-                if(model instanceof ComputationGraph)
-                    ((ComputationGraph) model).feedForward();
-            }
-            forwardTime = System.currentTimeMillis() - forwardTime;
-            report.setAvgFeedForward(forwardTime / nIterations);
-
-            log.info("=============================");
-            log.info("===== Benchmark Results =====");
-            log.info("=============================");
-
-            System.out.println(report.getModelSummary());
-            System.out.println(report.toString());
-        }
+        benchmark(height, width, channels, numLabels, trainBatchSize, seed, datasetName, cifar, modelType);
     }
 
     public static void main(String[] args) throws Exception {

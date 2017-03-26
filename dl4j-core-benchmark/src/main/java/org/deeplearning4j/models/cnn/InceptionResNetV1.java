@@ -1,6 +1,5 @@
 package org.deeplearning4j.models.cnn;
 
-import org.deeplearning4j.gradientcheck.GradientCheckUtil;
 import org.deeplearning4j.models.TestableModel;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
@@ -11,14 +10,7 @@ import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 
 /**
  * A variant of the original FaceNet model that relies on embeddings and triplet loss.
@@ -115,7 +107,7 @@ public class InceptionResNetV1 implements TestableModel {
 
 
     // 5xInception-resnet-A
-    InceptionResNet.inceptionV1ResA(graph, "resnetA", 5, 0.17, "stem-batch7");
+    InceptionResNetHelper.inceptionV1ResA(graph, "resnetA", 5, 0.17, "stem-batch7");
 
 
     // Reduction-A
@@ -137,7 +129,7 @@ public class InceptionResNetV1 implements TestableModel {
 
 
     // 10xInception-resnet-B
-    InceptionResNet.inceptionV1ResB(graph, "resnetB", 10, 0.10, "reduceA");
+    InceptionResNetHelper.inceptionV1ResB(graph, "resnetB", 10, 0.10, "reduceA");
 
 
     // Reduction-B
@@ -166,7 +158,7 @@ public class InceptionResNetV1 implements TestableModel {
 
 
     // 10xInception-resnet-C
-    InceptionResNet.inceptionV1ResC(graph, "resnetC", 5, 0.20, "reduceB");
+    InceptionResNetHelper.inceptionV1ResC(graph, "resnetC", 5, 0.20, "reduceB");
 
     // Average pooling
     graph.addLayer("avgpool", new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.AVG, new int[]{1,1}).build(), "resnetC");

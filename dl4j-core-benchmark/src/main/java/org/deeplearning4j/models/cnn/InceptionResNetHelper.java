@@ -23,7 +23,7 @@ import org.nd4j.linalg.activations.Activation;
  *
  * @author Justin Long (crockpotveggies)
  */
-public class InceptionResNet {
+public class InceptionResNetHelper {
 
     public static String nameLayer(String blockName, String layerName, int i) { return blockName+"-"+layerName+"-"+i; }
 
