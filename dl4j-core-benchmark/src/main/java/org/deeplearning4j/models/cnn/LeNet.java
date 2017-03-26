@@ -1,5 +1,6 @@
 package org.deeplearning4j.models.cnn;
 
+import org.deeplearning4j.models.TestableModel;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -11,13 +12,14 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 /**
  * LeNet
  * Reference: http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf
  */
-public class LeNet {
+public class LeNet implements TestableModel {
 
     protected static int height;
     protected static int width;
@@ -35,12 +37,11 @@ public class LeNet {
         this.iterations = iterations;
     }
 
-    public MultiLayerNetwork init() {
-
-        MultiLayerConfiguration.Builder conf = new NeuralNetConfiguration.Builder()
+    public MultiLayerConfiguration conf() {
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
-                .activation("identity")
+                .activation(Activation.IDENTITY)
                 .weightInit(WeightInit.XAVIER)
                 .learningRate(1e-2)//.biasLearningRate(2e-2)
                 //.learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
@@ -65,19 +66,24 @@ public class LeNet {
                         .build())
                 .layer(4, new DenseLayer.Builder()
                         .name("ffn1")
-                        .activation("relu")
+                        .activation(Activation.RELU)
                         .nOut(500)
                         .build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .name("output")
                         .nOut(numLabels)
-                        .activation("softmax") // radial basis function required
+                        .activation(Activation.SOFTMAX) // radial basis function required
                         .build())
-                .backprop(true).pretrain(false)
-                .setInputType(InputType.convolutional(height, width, channels));
+                .backprop(true)
+                .pretrain(false)
+                .setInputType(InputType.convolutional(height, width, channels))
+                .build();
 
+        return conf;
+    }
 
-        MultiLayerNetwork model = new MultiLayerNetwork(conf.build());
+    public MultiLayerNetwork init() {
+        MultiLayerNetwork model = new MultiLayerNetwork(conf());
         model.init();
 
         return model;

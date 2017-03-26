@@ -1,14 +1,11 @@
 package org.deeplearning4j.models;
 
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.api.Model;
 
 /**
  * Generic interface for testable models.
  */
 public interface TestableModel {
 
-    public MultiLayerConfiguration conf();
-
-    public MultiLayerNetwork init();
+    public Model init();
 }
