@@ -3,11 +3,11 @@ package org.deeplearning4j.listeners;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.jcublas.ops.executioner.CudaExecutioner;
 import org.nd4j.linalg.jcublas.ops.executioner.CudaGridExecutioner;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -96,8 +96,6 @@ public class BenchmarkReport {
 
     public List<String> devices() { return devices; }
 
-    public long totalIterationTime() { return totalIterationTime; }
-
     public long avgIterationTime() { return totalIterationTime / iterations; }
 
     public double avgSamplesSec() { return totalSamplesSec / (double) iterations; }
@@ -109,6 +107,8 @@ public class BenchmarkReport {
     public String getModelSummary() { return modelSummary; }
 
     public String toString() {
+        DecimalFormat df = new DecimalFormat("#.####");
+
         final Object[][] table = new String[13][];
         table[0] = new String[] { "Name", name };
         table[1] = new String[] { "Description", description };
@@ -121,8 +121,8 @@ public class BenchmarkReport {
         table[8] = new String[] { "Total Layers", Integer.toString(numLayers) };
         table[9] = new String[] { "Avg Feedforward (ms)", Double.toString(avgFeedForward()) };
         table[10] = new String[] { "Avg Iteration (ms)", Double.toString(avgIterationTime()) };
-        table[11] = new String[] { "Avg Samples/sec", Double.toString(avgSamplesSec()) };
-        table[12] = new String[] { "Avg Batches/sec", Double.toString(avgBatchesSec()) };
+        table[11] = new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) };
+        table[12] = new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) };
 
         StringBuilder sb = new StringBuilder();
 

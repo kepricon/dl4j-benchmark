@@ -38,7 +38,7 @@ public class BenchmarkCifar {
 
     // values to pass in from command line when compiled, esp running remotely
     @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-mT")
-    public String modelType = "ALEXNET";
+    public String modelType = "INCEPTIONRESNETV1";
 //    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
 //    public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
@@ -62,8 +62,8 @@ public class BenchmarkCifar {
     @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
     public int gcWindow = 110;
 
-    protected static int height = 224;
-    protected static int width = 224;
+    protected static int height = 160;
+    protected static int width = 160;
     protected static int channels = 3;
     protected static int numLabels = CifarLoader.NUM_LABELS;
 

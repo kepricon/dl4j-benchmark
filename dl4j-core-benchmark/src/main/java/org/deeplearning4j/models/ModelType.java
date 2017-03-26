@@ -7,7 +7,8 @@ public enum ModelType {
     ALL,
     CNN,
     ALEXNET,
-    LENET,
+    GOOGLELENET,
     VGG16,
+    INCEPTIONRESNETV1,
     RNN
 }
