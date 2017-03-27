@@ -9,7 +9,7 @@ import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.nd4j.jita.conf.CudaEnvironment;
+//import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -25,7 +25,7 @@ public class BenchmarkCifar extends BaseBenchmark {
     //    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
 //    public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
-    public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES;
+    public static int numTrainExamples = 5000;
     @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
     public static int trainBatchSize = 125;
     @Option(name="--preProcess",usage="Set preprocess.",aliases = "-pre")
@@ -60,15 +60,15 @@ public class BenchmarkCifar extends BaseBenchmark {
         }
 
         // memory management optimizations
-        CudaEnvironment.getInstance().getConfiguration()
-                .allowMultiGPU(false)
-                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
-                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
-                .setNumberOfGcThreads(gcThreads);
-        Nd4j.create(1);
-        Nd4j.getMemoryManager().togglePeriodicGc(true);
-        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
-        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
+//        CudaEnvironment.getInstance().getConfiguration()
+//                .allowMultiGPU(false)
+//                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+//                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
+//                .setNumberOfGcThreads(gcThreads);
+//        Nd4j.create(1);
+//        Nd4j.getMemoryManager().togglePeriodicGc(true);
+//        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
+//        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
         if(modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
