@@ -13,6 +13,8 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
@@ -26,7 +28,7 @@ public abstract class BaseBenchmark {
     protected static Map<ModelType,TestableModel> networks;
     protected boolean train = true;
 
-    public void benchmark(int height, int width, int channels, int numLabels, int batchSize, int seed, String datasetName, DataSetIterator iter, ModelType modelType) {
+    public void benchmark(int height, int width, int channels, int numLabels, int batchSize, int seed, String datasetName, DataSetIterator iter, ModelType modelType) throws Exception {
         long totalTime = System.currentTimeMillis();
 
         log.info("Building models for "+modelType+"....");
@@ -46,32 +48,73 @@ public abstract class BaseBenchmark {
 
             model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
 
+
             log.info("===== Benchmarking training iteration =====");
             if(model instanceof MultiLayerNetwork)
                 ((MultiLayerNetwork) model).fit(iter);
             if(model instanceof ComputationGraph)
                 ((ComputationGraph) model).fit(iter);
 
-            log.info("===== Benchmarking forward pass =====");
+
+            log.info("===== Benchmarking forward/backward pass =====");
+            /*
+                Notes: popular benchmarks will measure the time it takes to set the input and feed forward
+                and backward. This is consistent with benchmarks seen in the wild like this code:
+                https://github.com/jcjohnson/cnn-benchmarks/blob/master/cnn_benchmark.lua
+             */
             iter.reset(); // prevents NPE
-            long nIterations = 1000;
-            INDArray input = iter.next().getFeatures();
+            long totalForward = 0;
+            long totalBackward = 0;
+            long nIterations = 0;
             if(model instanceof MultiLayerNetwork) {
-                ((MultiLayerNetwork) model).setInput(input);
+                while(iter.hasNext()) {
+                    INDArray input = iter.next().getFeatures();
+
+                    // forward
+                    long forwardTime = System.currentTimeMillis();
+                    ((MultiLayerNetwork) model).setInput(input);
+                    ((MultiLayerNetwork) model).feedForward();
+                    forwardTime = System.currentTimeMillis() - forwardTime;
+                    totalForward += forwardTime;
+
+                    // backward
+                    long backwardTime = System.currentTimeMillis();
+                    Method m = MultiLayerNetwork.class.getDeclaredMethod("backprop"); // requires reflection
+                    m.setAccessible(true);
+                    m.invoke(model);
+                    backwardTime = System.currentTimeMillis() - backwardTime;
+                    totalBackward += backwardTime;
+
+                    nIterations += 1;
+                    if(nIterations % 100 == 0) log.info("Completed "+nIterations+" iterations");
+                }
             }
             if(model instanceof ComputationGraph) {
-                ((ComputationGraph) model).setInput(0, input);
-            }
+                while(iter.hasNext()) {
+                    INDArray input = iter.next().getFeatures();
 
-            long forwardTime = System.currentTimeMillis();
-            for (int i = 0; i < nIterations; i++) {
-                if(model instanceof MultiLayerNetwork)
-                    ((MultiLayerNetwork) model).feedForward();
-                if(model instanceof ComputationGraph)
+                    // forward
+                    long forwardTime = System.currentTimeMillis();
+                    ((ComputationGraph) model).setInput(0, input);
                     ((ComputationGraph) model).feedForward();
+                    forwardTime = System.currentTimeMillis() - forwardTime;
+                    totalForward += forwardTime;
+
+                    // backward
+                    long backwardTime = System.currentTimeMillis();
+                    Method m = ComputationGraph.class.getDeclaredMethod("calcBackpropGradients", boolean.class, INDArray[].class);
+                    m.setAccessible(true);
+                    m.invoke(model, false);
+                    backwardTime = System.currentTimeMillis() - backwardTime;
+                    totalBackward += backwardTime;
+
+                    nIterations += 1;
+                    if(nIterations % 100 == 0) log.info("Completed "+nIterations+" iterations");
+                }
             }
-            forwardTime = System.currentTimeMillis() - forwardTime;
-            report.setAvgFeedForward(forwardTime / nIterations);
+            report.setAvgFeedForward((double) totalForward / (double) nIterations);
+            report.setAvgBackprop((double) totalBackward / (double) nIterations);
+
 
             log.info("=============================");
             log.info("===== Benchmark Results =====");

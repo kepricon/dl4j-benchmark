@@ -9,7 +9,7 @@ import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-//import org.nd4j.jita.conf.CudaEnvironment;
+import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -25,7 +25,7 @@ public class BenchmarkCifar extends BaseBenchmark {
     //    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
 //    public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
-    public static int numTrainExamples = 5000;
+    public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES; // you can also use
     @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
     public static int trainBatchSize = 125;
     @Option(name="--preProcess",usage="Set preprocess.",aliases = "-pre")
@@ -39,8 +39,6 @@ public class BenchmarkCifar extends BaseBenchmark {
     @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
     public static int gcWindow = 300;
 
-
-
     protected int height = 224;
     protected int width = 224;
     protected int channels = 3;
@@ -48,7 +46,7 @@ public class BenchmarkCifar extends BaseBenchmark {
     protected String datasetName  = "CIFAR-10";
     protected int seed = 42;
 
-    public void run(String[] args) {
+    public void run(String[] args) throws Exception {
         // Parse command line arguments if they exist
         CmdLineParser parser = new CmdLineParser(this);
         try {
@@ -60,15 +58,15 @@ public class BenchmarkCifar extends BaseBenchmark {
         }
 
         // memory management optimizations
-//        CudaEnvironment.getInstance().getConfiguration()
-//                .allowMultiGPU(false)
-//                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
-//                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
-//                .setNumberOfGcThreads(gcThreads);
-//        Nd4j.create(1);
-//        Nd4j.getMemoryManager().togglePeriodicGc(true);
-//        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
-//        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
+        CudaEnvironment.getInstance().getConfiguration()
+                .allowMultiGPU(false)
+                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
+                .setNumberOfGcThreads(gcThreads);
+        Nd4j.create(1);
+        Nd4j.getMemoryManager().togglePeriodicGc(true);
+        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
+        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
         if(modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");

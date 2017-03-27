@@ -3,18 +3,10 @@ package org.deeplearning4j.listeners;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.nd4j.linalg.api.ops.executioner.GridExecutioner;
-import org.nd4j.linalg.api.ops.executioner.OpExecutioner;
-import org.nd4j.linalg.cpu.nativecpu.ops.NativeOpExecutioner;
 import org.nd4j.linalg.factory.Nd4j;
-import oshi.PlatformEnum;
 import oshi.SystemInfo;
-import oshi.hardware.CentralProcessor;
 import oshi.hardware.HardwareAbstractionLayer;
-import oshi.hardware.platform.linux.LinuxCentralProcessor;
 import oshi.software.os.OperatingSystem;
-//import org.nd4j.linalg.jcublas.ops.executioner.CudaExecutioner;
-//import org.nd4j.linalg.jcublas.ops.executioner.CudaGridExecutioner;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -39,7 +31,9 @@ public class BenchmarkReport {
     private long totalIterationTime;
     private double totalSamplesSec;
     private double totalBatchesSec;
-    private long avgFeedForward;
+    private double avgFeedForward;
+    private double avgBackprop;
+    private long avgUpdater;
 
     public BenchmarkReport(String name, String description) {
         this.name = name;
@@ -86,11 +80,15 @@ public class BenchmarkReport {
 
     public void addBatchesSec(double batchesSec) { totalBatchesSec += batchesSec; }
 
-    public void setAvgFeedForward(long feedForward) { avgFeedForward = feedForward; }
+    public void setAvgFeedForward(double feedForwardTime) { avgFeedForward = feedForwardTime; }
+
+    public void setAvgBackprop(double backpropTime) { this.avgBackprop = backpropTime; }
+
+    public void setAvgUpdater(long updaterTime) { this.avgUpdater = updaterTime; }
 
     public List<String> devices() { return devices; }
 
-    public long avgIterationTime() { return totalIterationTime / iterations; }
+    public double avgIterationTime() { return (double) totalIterationTime / (double) iterations; }
 
     public double avgSamplesSec() { return totalSamplesSec / (double) iterations; }
 
@@ -98,16 +96,18 @@ public class BenchmarkReport {
 
     public double avgFeedForward() { return avgFeedForward; }
 
+    public double avgBackprop() { return avgBackprop; }
+
     public String getModelSummary() { return modelSummary; }
 
     public String toString() {
-        DecimalFormat df = new DecimalFormat("#.####");
+        DecimalFormat df = new DecimalFormat("#.##");
 
         SystemInfo sys = new SystemInfo();
         OperatingSystem os = sys.getOperatingSystem();
         HardwareAbstractionLayer hardware = sys.getHardware();
 
-        final Object[][] table = new String[13][];
+        final Object[][] table = new String[14][];
         table[0] = new String[] { "Name", name };
         table[1] = new String[] { "Description", description };
         table[2] = new String[] { "Operating System",
@@ -120,10 +120,11 @@ public class BenchmarkReport {
         table[6] = new String[] { "BLAS Vendor", blasVendor };
         table[7] = new String[] { "Total Params", Integer.toString(numParams) };
         table[8] = new String[] { "Total Layers", Integer.toString(numLayers) };
-        table[9] = new String[] { "Avg Feedforward (ms)", Double.toString(avgFeedForward()) };
-        table[10] = new String[] { "Avg Iteration (ms)", Double.toString(avgIterationTime()) };
-        table[11] = new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) };
-        table[12] = new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) };
+        table[9] = new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) };
+        table[10] = new String[] { "Avg Backprop (ms)", df.format(avgBackprop) };
+        table[11] = new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) };
+        table[12] = new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) };
+        table[13] = new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) };
 
         StringBuilder sb = new StringBuilder();
 
