@@ -10,8 +10,10 @@ import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.parallelism.ParallelWrapper;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -124,6 +126,28 @@ public abstract class BaseBenchmark {
         }
     }
 
+    public void train(Model model, DataSetIterator iter, int numGPUs){
+        log.info("===== Benchmarking training iteration =====");
+        if(numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
+            if (model instanceof MultiLayerNetwork)
+                ((MultiLayerNetwork) model).fit(iter);
+            if (model instanceof ComputationGraph)
+                ((ComputationGraph) model).fit(iter);
+        } else { // multiple gpu mode
+            numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
+            ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
+                    .prefetchBuffer(16 * numGPUs)
+                    .reportScoreAfterAveraging(true)
+                    .averagingFrequency(10)
+                    .useLegacyAveraging(false)
+                    .useMQ(true)
+                    .workers(numGPUs)
+                    .build();
+
+            pw.fit(iter);
+        }
+    }
+
     public void benchmarkRNN(String datasetName, DataSetIterator iter, ModelType modelType, int numGPUs) throws Exception {
         long totalTime = System.currentTimeMillis();
 
@@ -145,13 +169,7 @@ public abstract class BaseBenchmark {
 
             model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
 
-
-            log.info("===== Benchmarking training iteration =====");
-            if(model instanceof MultiLayerNetwork)
-                ((MultiLayerNetwork) model).fit(iter);
-            if(model instanceof ComputationGraph)
-                ((ComputationGraph) model).fit(iter);
-
+            train(model, iter, numGPUs);
 
             log.info("===== Benchmarking forward/backward pass =====");
             /*
