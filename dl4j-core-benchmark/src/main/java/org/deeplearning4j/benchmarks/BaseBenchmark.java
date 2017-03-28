@@ -165,7 +165,6 @@ public abstract class BaseBenchmark {
             long nIterations = 0;
             if(model instanceof MultiLayerNetwork) {
                 while(iter.hasNext()) {
-                    System.out.println(nIterations);
                     INDArray input = iter.next().getFeatures();
 
                     // forward
@@ -177,10 +176,6 @@ public abstract class BaseBenchmark {
 
                     // backward
                     long backwardTime = System.currentTimeMillis();
-                    Method[] methods = MultiLayerNetwork.class.getDeclaredMethods();
-                    for(Method m : methods){
-                        System.out.println(m.toString() + "-_-;" + m.getName() + "-_-;" + m.toGenericString());
-                    }
                     Method m = MultiLayerNetwork.class.getDeclaredMethod("backprop"); // requires reflection
                     m.setAccessible(true);
                     m.invoke(model);
