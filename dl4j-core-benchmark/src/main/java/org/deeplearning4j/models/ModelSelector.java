@@ -3,6 +3,7 @@ package org.deeplearning4j.models;
 import com.beust.jcommander.ParameterException;
 import org.deeplearning4j.models.cnn.*;
 import org.deeplearning4j.models.cnn.VGG16;
+import org.deeplearning4j.models.rnn.W2VSentiment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +43,10 @@ public class ModelSelector {
             // RNN models
             case RNN:
 //                // not yet
+            case W2VSENTIMENT:
+                netmap.put(ModelType.W2VSENTIMENT, new W2VSentiment());
+                break;
+
             default:
 //                // do nothing
         }

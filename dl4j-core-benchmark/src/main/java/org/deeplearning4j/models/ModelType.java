@@ -11,5 +11,6 @@ public enum ModelType {
     VGG16,
     INCEPTIONRESNETV1,
     FACENETNN4,
-    RNN
+    RNN,
+    W2VSENTIMENT
 }
