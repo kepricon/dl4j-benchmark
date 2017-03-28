@@ -18,9 +18,12 @@
     <description>Examples of training different data sets</description>
 
     <properties>
-        <dl4j.version>0.8.1-SNAPSHOT</dl4j.version>
-        <nd4j.version>0.8.1-SNAPSHOT</nd4j.version>
-        <datavec.version>0.8.1-SNAPSHOT</datavec.version>
+        <!--<dl4j.version>0.8.1-SNAPSHOT</dl4j.version>-->
+        <!--<nd4j.version>0.8.1-SNAPSHOT</nd4j.version>-->
+        <!--<datavec.version>0.8.1-SNAPSHOT</datavec.version>-->
+        <dl4j.version>0.8.0</dl4j.version>
+        <nd4j.version>0.8.0</nd4j.version>
+        <datavec.version>0.8.0</datavec.version>
         <jackson.version>2.4.4</jackson.version>
         <scala.version>2.11.6</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
@@ -33,7 +36,7 @@
         <profile>
             <id>native</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <nd4j.backend>nd4j-native-platform</nd4j.backend>
@@ -42,7 +45,7 @@
         <profile>
             <id>cuda8</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend>
@@ -181,8 +184,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
         </plugins>
