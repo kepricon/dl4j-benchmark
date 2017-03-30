@@ -1,5 +1,6 @@
 package org.deeplearning4j.listeners;
 
+import org.bytedeco.javacpp.cudnn;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -10,6 +11,7 @@ import oshi.software.os.OperatingSystem;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Reporting for BenchmarkListener.
@@ -25,6 +27,7 @@ public class BenchmarkReport {
     private String cpuCores;
     private String blasVendor;
     private String modelSummary;
+    private String cudnnVersion;
     private int numParams;
     private int numLayers;
     private long iterations;
@@ -45,6 +48,14 @@ public class BenchmarkReport {
         backend = env.get("backend").toString();
         cpuCores = env.get("cores").toString();
         blasVendor = env.get("blas.vendor").toString();
+
+        if(backend.equals("CUDA")){
+            try {
+                cudnnVersion = String.valueOf(cudnn.cudnnGetVersion());
+            }catch (UnsatisfiedLinkError e){
+                cudnnVersion = "n/a";
+            }
+        }
 
         // if CUDA is present, add GPU information
         try {
@@ -107,6 +118,13 @@ public class BenchmarkReport {
 
     public String getModelSummary() { return modelSummary; }
 
+    private String getElapsedTime(long elapsedTime){
+        return String.format("%d hr %d min, %d sec",
+                elapsedTime/(1000*60*60), //hr
+                (elapsedTime%(1000*60*60))/(1000*60), //min
+                ((elapsedTime%(1000*60*60))%(1000*60))/1000); //sec
+    }
+
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##");
 
@@ -114,25 +132,28 @@ public class BenchmarkReport {
         OperatingSystem os = sys.getOperatingSystem();
         HardwareAbstractionLayer hardware = sys.getHardware();
 
-        final Object[][] table = new String[15][];
-        table[0] = new String[] { "Name", name };
-        table[1] = new String[] { "Description", description };
-        table[2] = new String[] { "Operating System",
+        ArrayList<String[]> table = new ArrayList<String[]>();
+        table.add( new String[] { "Name", name } );
+        table.add( new String[] { "Description", description } );
+        table.add( new String[] { "Operating System",
                 os.getManufacturer()+" "+
                 os.getFamily()+" "+
-                os.getVersion().getVersion() };
-        table[3] = new String[] { "Devices", devices().get(0) };
-        table[4] = new String[] { "CPU Cores", cpuCores };
-        table[5] = new String[] { "Backend", backend };
-        table[6] = new String[] { "BLAS Vendor", blasVendor };
-        table[7] = new String[] { "Total Params", Integer.toString(numParams) };
-        table[8] = new String[] { "Total Layers", Integer.toString(numLayers) };
-        table[9] = new String[] { "Total Training Time (ms)", df.format(totalTrainingTime) };
-        table[10] = new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) };
-        table[11] = new String[] { "Avg Backprop (ms)", df.format(avgBackprop) };
-        table[12] = new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) };
-        table[13] = new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) };
-        table[14] = new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) };
+                os.getVersion().getVersion() } );
+        table.add( new String[] { "Devices", devices().get(0) } );
+        table.add( new String[] { "CPU Cores", cpuCores } ) ;
+        table.add( new String[] { "Backend", backend } );
+        table.add( new String[] { "BLAS Vendor", blasVendor } );
+        if(backend.equals("CUDA")){
+            table.add( new String[] { "Cudnn", cudnnVersion } );
+        }
+        table.add( new String[] { "Total Params", Integer.toString(numParams) } );
+        table.add( new String[] { "Total Layers", Integer.toString(numLayers) } );
+        table.add( new String[] { "Total Training Time", getElapsedTime(totalTrainingTime) } );
+        table.add( new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) } );
+        table.add( new String[] { "Avg Backprop (ms)", df.format(avgBackprop) } );
+        table.add( new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) } );
+        table.add( new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) } );
+        table.add( new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) } );
 
         StringBuilder sb = new StringBuilder();
 
