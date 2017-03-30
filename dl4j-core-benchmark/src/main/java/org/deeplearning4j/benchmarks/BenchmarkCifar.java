@@ -22,8 +22,8 @@ public class BenchmarkCifar extends BaseBenchmark {
     // values to pass in from command line when compiled, esp running remotely
     @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-model")
     public static ModelType modelType = ModelType.ALEXNET;
-    //    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
-//    public int numGPUs = 0;
+    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
+    public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
     public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES; // you can also use
     @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
@@ -68,14 +68,14 @@ public class BenchmarkCifar extends BaseBenchmark {
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
         Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
-        if(modelType == ModelType.ALL || modelType == ModelType.RNN)
-            throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
+        if(modelType == ModelType.ALL || modelType == ModelType.CNN)
+            throw new UnsupportedOperationException("W2VSentiment benchmarks are applicable to RNN models only.");
 
         log.info("Loading data...");
         ImageTransform flip = new FlipImageTransform(seed); // Should random flip some images but not all
         DataSetIterator cifar = new CifarDataSetIterator(trainBatchSize, numTrainExamples, new int[]{height, width, channels}, numLabels, flip, preProcess, train);
 
-        benchmark(height, width, channels, numLabels, trainBatchSize, seed, datasetName, cifar, modelType);
+        benchmarkCNN(height, width, channels, numLabels, trainBatchSize, seed, datasetName, cifar, modelType, numGPUs);
     }
 
     public static void main(String[] args) throws Exception {

@@ -1,26 +1,15 @@
 package org.deeplearning4j.benchmarks;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
+import org.deeplearning4j.datasets.DataSetsBuilder;
 import org.deeplearning4j.models.ModelType;
-import org.deeplearning4j.nn.conf.GradientNormalization;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.layers.GravesLSTM;
-import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.nd4j.jita.conf.CudaEnvironment;
-import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.io.File;
 
@@ -43,9 +32,6 @@ public class BenchmarkW2VSentiment extends BaseBenchmark {
     public static int gcWindow = 300;
     @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs. -1 indicates machine's maximum gpus ",aliases = "-ng")
     public static int numGPUs = 0;
-
-    public static final String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_w2vSentiment_train/");
-    public static final String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_w2vSentiment_test/");
 
     protected String datasetName  = "IMDB review";
 
@@ -75,8 +61,11 @@ public class BenchmarkW2VSentiment extends BaseBenchmark {
             throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
 
         log.info("Loading data...");
-        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(TRAIN_PATH));
-        DataSetIterator test = new ExistingMiniBatchDataSetIterator(new File(TEST_PATH));
+//        if(new File(DataSetsBuilder.TRAIN_PATH).exists() == false) {
+//            new DataSetsBuilder().run(null);
+//        }
+        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(DataSetsBuilder.TRAIN_PATH));
+        DataSetIterator test = new ExistingMiniBatchDataSetIterator(new File(DataSetsBuilder.TEST_PATH));
 
 
         benchmarkRNN(datasetName, train, modelType, numGPUs);

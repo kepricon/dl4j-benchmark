@@ -42,7 +42,8 @@ public class ModelSelector {
                 break;
             // RNN models
             case RNN:
-//                // not yet
+                netmap.put(ModelType.W2VSENTIMENT, new W2VSentiment());
+                break;
             case W2VSENTIMENT:
                 netmap.put(ModelType.W2VSENTIMENT, new W2VSentiment());
                 break;

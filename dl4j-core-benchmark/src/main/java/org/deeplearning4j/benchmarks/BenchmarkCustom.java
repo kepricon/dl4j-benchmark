@@ -32,8 +32,8 @@ public class BenchmarkCustom extends BaseBenchmark {
     // values to pass in from command line when compiled, esp running remotely
     @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-model")
     public static ModelType modelType = ModelType.ALEXNET;
-    //    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
-//    public int numGPUs = 0;
+    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
+    public int numGPUs = 0;
     @Option(name="--datasetPath",usage="Path to the parent directly of multiple directories of classes of images.",aliases = "-dataset")
     public static String datasetPath = null;
     @Option(name="--numLabels",usage="Train batch size.",aliases = "-labels")
@@ -102,7 +102,7 @@ public class BenchmarkCustom extends BaseBenchmark {
 
         log.info("Preparing benchmarks for "+split[0].locations().length+" images, "+iter.getLabels().size()+" labels");
 
-        benchmark(height, width, channels, trainRR.getLabels().size(), trainBatchSize, seed, datasetName, iter, modelType);
+        benchmarkCNN(height, width, channels, trainRR.getLabels().size(), trainBatchSize, seed, datasetName, iter, modelType, numGPUs);
     }
 
     public static void main(String[] args) throws Exception {
