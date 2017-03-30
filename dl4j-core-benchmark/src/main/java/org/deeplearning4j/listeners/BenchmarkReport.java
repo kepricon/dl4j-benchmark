@@ -34,6 +34,7 @@ public class BenchmarkReport {
     private double avgFeedForward;
     private double avgBackprop;
     private long avgUpdater;
+    private long totalTrainingTime;
 
     public BenchmarkReport(String name, String description) {
         this.name = name;
@@ -98,6 +99,12 @@ public class BenchmarkReport {
 
     public double avgBackprop() { return avgBackprop; }
 
+    public void setTotalTrainingTime(long totalTrainingTime) {
+        this.totalTrainingTime = totalTrainingTime;
+    }
+
+    public long getTotalIterationTime() { return this.totalTrainingTime; }
+
     public String getModelSummary() { return modelSummary; }
 
     public String toString() {
@@ -107,7 +114,7 @@ public class BenchmarkReport {
         OperatingSystem os = sys.getOperatingSystem();
         HardwareAbstractionLayer hardware = sys.getHardware();
 
-        final Object[][] table = new String[14][];
+        final Object[][] table = new String[15][];
         table[0] = new String[] { "Name", name };
         table[1] = new String[] { "Description", description };
         table[2] = new String[] { "Operating System",
@@ -120,11 +127,12 @@ public class BenchmarkReport {
         table[6] = new String[] { "BLAS Vendor", blasVendor };
         table[7] = new String[] { "Total Params", Integer.toString(numParams) };
         table[8] = new String[] { "Total Layers", Integer.toString(numLayers) };
-        table[9] = new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) };
-        table[10] = new String[] { "Avg Backprop (ms)", df.format(avgBackprop) };
-        table[11] = new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) };
-        table[12] = new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) };
-        table[13] = new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) };
+        table[9] = new String[] { "Total Training Time (ms)", df.format(totalTrainingTime) };
+        table[10] = new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) };
+        table[11] = new String[] { "Avg Backprop (ms)", df.format(avgBackprop) };
+        table[12] = new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) };
+        table[13] = new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) };
+        table[14] = new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) };
 
         StringBuilder sb = new StringBuilder();
 
