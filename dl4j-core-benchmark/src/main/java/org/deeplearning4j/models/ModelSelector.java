@@ -25,6 +25,8 @@ public class ModelSelector {
                 netmap.putAll(ModelSelector.select(ModelType.ALEXNET, height, width, channels, numLabels, seed, iterations));
                 netmap.putAll(ModelSelector.select(ModelType.GOOGLELENET, height, width, channels, numLabels, seed, iterations));
                 netmap.putAll(ModelSelector.select(ModelType.VGG16, height, width, channels, numLabels, seed, iterations));
+                netmap.putAll(ModelSelector.select(ModelType.LENET, height, width, channels, numLabels, seed, iterations));
+
                 break;
             case ALEXNET:
                 netmap.put(ModelType.ALEXNET, new AlexNet(height, width, channels, numLabels, seed, iterations));
@@ -39,6 +41,9 @@ public class ModelSelector {
                 break;
             case VGG16:
                 netmap.put(ModelType.VGG16, new VGG16(height, width, channels, numLabels, seed, iterations));
+                break;
+            case LENET:
+                netmap.put(ModelType.LENET, new LeNet(height, width, channels, numLabels, seed, iterations));
                 break;
             // RNN models
             case RNN:

@@ -1,7 +1,7 @@
 package org.deeplearning4j.benchmarks;
 
 import lombok.extern.slf4j.Slf4j;
-import org.deeplearning4j.datasets.DataSetsBuilder;
+import org.deeplearning4j.datasets.W2VSentimentDataSetsBuilder;
 import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -57,15 +57,15 @@ public class BenchmarkW2VSentiment extends BaseBenchmark {
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
         Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
-        if(modelType == ModelType.ALL || modelType == ModelType.RNN)
-            throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
+        if(modelType == ModelType.ALL || modelType == ModelType.CNN)
+            throw new UnsupportedOperationException("W2VSentiment benchmarks are applicable to RNN models only.");
 
         log.info("Loading data...");
-//        if(new File(DataSetsBuilder.TRAIN_PATH).exists() == false) {
-//            new DataSetsBuilder().run(null);
+//        if(new File(W2VSentimentDataSetsBuilder.TRAIN_PATH).exists() == false) {
+//            new W2VSentimentDataSetsBuilder().run(null);
 //        }
-        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(DataSetsBuilder.TRAIN_PATH));
-        DataSetIterator test = new ExistingMiniBatchDataSetIterator(new File(DataSetsBuilder.TEST_PATH));
+        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(W2VSentimentDataSetsBuilder.TRAIN_PATH));
+        DataSetIterator test = new ExistingMiniBatchDataSetIterator(new File(W2VSentimentDataSetsBuilder.TEST_PATH));
 
 
         benchmarkRNN(datasetName, train, modelType, numGPUs);

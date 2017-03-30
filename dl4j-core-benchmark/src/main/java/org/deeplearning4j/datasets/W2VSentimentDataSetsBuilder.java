@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * to do all preprocessing once, and save datasets as binary files, instead of doing the same stuff over and over on the fly
  *
  */
-public class DataSetsBuilder {
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(DataSetsBuilder.class);
+public class W2VSentimentDataSetsBuilder {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(W2VSentimentDataSetsBuilder.class);
 
     /** Data URL for downloading */
     public static final String DATA_URL = "http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz";
@@ -153,6 +153,6 @@ public class DataSetsBuilder {
 
 
     public static void main(String[] args) throws Exception {
-        new DataSetsBuilder().run(args);
+        new W2VSentimentDataSetsBuilder().run(args);
     }
 }
