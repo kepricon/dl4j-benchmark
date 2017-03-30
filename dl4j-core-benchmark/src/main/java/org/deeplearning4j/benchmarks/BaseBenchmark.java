@@ -62,7 +62,7 @@ public abstract class BaseBenchmark {
             model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
 
 
-            long trainTime = System.currentTimeMillis();
+            long epochTime = System.currentTimeMillis();
             log.info("===== Benchmarking training iteration =====");
             if(numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
                 if (model instanceof MultiLayerNetwork)
@@ -82,8 +82,8 @@ public abstract class BaseBenchmark {
 
                 pw.fit(iter);
             }
-            trainTime = System.currentTimeMillis() - trainTime;
-            report.setTotalTrainingTime(trainTime);
+            epochTime = System.currentTimeMillis() - epochTime;
+            report.setAvgEpochTime(epochTime);
 
 
             log.info("===== Benchmarking forward/backward pass =====");

@@ -37,7 +37,7 @@ public class BenchmarkReport {
     private double avgFeedForward;
     private double avgBackprop;
     private long avgUpdater;
-    private long totalTrainingTime;
+    private long avgEpochTime;
 
     public BenchmarkReport(String name, String description) {
         this.name = name;
@@ -110,11 +110,11 @@ public class BenchmarkReport {
 
     public double avgBackprop() { return avgBackprop; }
 
-    public void setTotalTrainingTime(long totalTrainingTime) {
-        this.totalTrainingTime = totalTrainingTime;
+    public void setAvgEpochTime(long avgEpochTime) {
+        this.avgEpochTime = avgEpochTime;
     }
 
-    public long getTotalIterationTime() { return this.totalTrainingTime; }
+    public long getAvgEpochTime() { return this.avgEpochTime; }
 
     public String getModelSummary() { return modelSummary; }
 
@@ -148,7 +148,7 @@ public class BenchmarkReport {
         }
         table.add( new String[] { "Total Params", Integer.toString(numParams) } );
         table.add( new String[] { "Total Layers", Integer.toString(numLayers) } );
-        table.add( new String[] { "Total Training Time", getElapsedTime(totalTrainingTime) } );
+        table.add( new String[] { "Total Training Time", getElapsedTime(avgEpochTime) } );
         table.add( new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) } );
         table.add( new String[] { "Avg Backprop (ms)", df.format(avgBackprop) } );
         table.add( new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) } );
