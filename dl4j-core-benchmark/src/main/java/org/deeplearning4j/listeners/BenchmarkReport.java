@@ -148,7 +148,7 @@ public class BenchmarkReport {
         }
         table.add( new String[] { "Total Params", Integer.toString(numParams) } );
         table.add( new String[] { "Total Layers", Integer.toString(numLayers) } );
-        table.add( new String[] { "Total Training Time", getElapsedTime(avgEpochTime) } );
+        table.add( new String[] { "Avg Epoch Time", getElapsedTime(avgEpochTime) } );
         table.add( new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) } );
         table.add( new String[] { "Avg Backprop (ms)", df.format(avgBackprop) } );
         table.add( new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) } );
