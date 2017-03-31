@@ -61,7 +61,7 @@ public class BenchmarkMnist extends BaseBenchmark {
 
         // memory management optimizations
         CudaEnvironment.getInstance().getConfiguration()
-                .allowMultiGPU(false)
+                .allowMultiGPU(numGPUs > 1 ? true : false)
                 .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
                 .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
                 .setNumberOfGcThreads(gcThreads);
