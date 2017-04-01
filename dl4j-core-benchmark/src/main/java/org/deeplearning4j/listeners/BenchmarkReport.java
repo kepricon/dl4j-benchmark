@@ -1,6 +1,6 @@
 package org.deeplearning4j.listeners;
 
-import org.bytedeco.javacpp.cudnn;
+//import org.bytedeco.javacpp.cudnn;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -49,13 +49,13 @@ public class BenchmarkReport {
         cpuCores = env.get("cores").toString();
         blasVendor = env.get("blas.vendor").toString();
 
-        if(backend.equals("CUDA")){
-            try {
-                cudnnVersion = String.valueOf(cudnn.cudnnGetVersion());
-            }catch (UnsatisfiedLinkError e){
-                cudnnVersion = "n/a";
-            }
-        }
+//        if(backend.equals("CUDA")){
+//            try {
+//                cudnnVersion = String.valueOf(cudnn.cudnnGetVersion());
+//            }catch (UnsatisfiedLinkError e){
+//                cudnnVersion = "n/a";
+//            }
+//        }
 
         // if CUDA is present, add GPU information
         try {
