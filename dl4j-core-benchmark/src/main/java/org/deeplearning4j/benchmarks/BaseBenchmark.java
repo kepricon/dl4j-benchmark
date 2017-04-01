@@ -140,7 +140,7 @@ public abstract class BaseBenchmark {
                     long backwardTime = System.currentTimeMillis();
                     Method m = ComputationGraph.class.getDeclaredMethod("calcBackpropGradients", boolean.class, INDArray[].class);
                     m.setAccessible(true);
-                    m.invoke(model, false);
+                    m.invoke(model, false, new INDArray[0]);
                     backwardTime = System.currentTimeMillis() - backwardTime;
                     totalBackward += backwardTime;
 
