@@ -17,7 +17,7 @@ import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.nd4j.jita.conf.CudaEnvironment;
+//import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
@@ -67,15 +67,15 @@ public class BenchmarkCustom extends BaseBenchmark {
         }
 
         // memory management optimizations
-        CudaEnvironment.getInstance().getConfiguration()
-                .allowMultiGPU(false)
-                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
-                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
-                .setNumberOfGcThreads(gcThreads);
-        Nd4j.create(1);
-        Nd4j.getMemoryManager().togglePeriodicGc(true);
-        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
-        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
+//        CudaEnvironment.getInstance().getConfiguration()
+//                .allowMultiGPU(false)
+//                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+//                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
+//                .setNumberOfGcThreads(gcThreads);
+//        Nd4j.create(1);
+//        Nd4j.getMemoryManager().togglePeriodicGc(true);
+//        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
+//        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
         if(modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("Image benchmarks are applicable to CNN models only.");

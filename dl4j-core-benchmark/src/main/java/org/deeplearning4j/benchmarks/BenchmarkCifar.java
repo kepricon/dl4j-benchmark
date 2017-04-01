@@ -9,9 +9,12 @@ import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.nd4j.jita.conf.CudaEnvironment;
+//import org.nd4j.jita.conf.CudaEnvironment;
+import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+
+import java.io.File;
 
 /**
  * Benchmarks popular CNN models using the CIFAR-10 dataset.
@@ -58,15 +61,15 @@ public class BenchmarkCifar extends BaseBenchmark {
         }
 
         // memory management optimizations
-        CudaEnvironment.getInstance().getConfiguration()
-                .allowMultiGPU(numGPUs > 1 ? true : false)
-                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
-                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
-                .setNumberOfGcThreads(gcThreads);
-        Nd4j.create(1);
-        Nd4j.getMemoryManager().togglePeriodicGc(true);
-        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
-        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
+//        CudaEnvironment.getInstance().getConfiguration()
+//                .allowMultiGPU(false)
+//                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+//                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
+//                .setNumberOfGcThreads(gcThreads);
+//        Nd4j.create(1);
+//        Nd4j.getMemoryManager().togglePeriodicGc(true);
+//        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
+//        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
         if(modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
@@ -75,7 +78,9 @@ public class BenchmarkCifar extends BaseBenchmark {
         ImageTransform flip = new FlipImageTransform(seed); // Should random flip some images but not all
         DataSetIterator cifar = new CifarDataSetIterator(trainBatchSize, numTrainExamples, new int[]{height, width, channels}, numLabels, flip, preProcess, train);
 
-        benchmarkCNN(height, width, channels, numLabels, trainBatchSize, seed, datasetName, cifar, modelType, numGPUs);
+        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(BenchmarkTinyImageNet.TRAIN_PATH));
+//        benchmarkCNN(height, width, channels, numLabels, trainBatchSize, seed, datasetName, cifar, modelType, numGPUs);
+        benchmarkCNN(height, width, channels, numLabels, trainBatchSize, seed, datasetName, train, modelType, numGPUs);
     }
 
     public static void main(String[] args) throws Exception {
