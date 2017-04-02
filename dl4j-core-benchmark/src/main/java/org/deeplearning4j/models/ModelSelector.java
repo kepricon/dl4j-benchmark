@@ -36,6 +36,7 @@ public class ModelSelector {
                 break;
             case INCEPTIONRESNETV1:
                 netmap.put(ModelType.INCEPTIONRESNETV1, new InceptionResNetV1(height, width, channels, numLabels, seed, iterations));
+                break;
             case FACENETNN4:
                 netmap.put(ModelType.FACENETNN4, new FaceNetNN4(height, width, channels, numLabels, seed, iterations));
                 break;
