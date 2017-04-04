@@ -78,7 +78,7 @@ public abstract class BaseBenchmark {
                 }else if (model instanceof ComputationGraph) {
 //                        ((ComputationGraph) model).fit(iter);
                     while(iter.hasNext() && nIteration < maxIteration){
-                        ((MultiLayerNetwork) model).fit(iter.next());
+                        ((ComputationGraph) model).fit(iter.next());
                         nIteration++;
                     }
                 }
