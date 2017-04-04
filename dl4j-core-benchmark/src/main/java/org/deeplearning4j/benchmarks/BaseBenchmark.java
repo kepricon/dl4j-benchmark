@@ -11,7 +11,6 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.parallelism.ParallelWrapper;
-import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -30,6 +29,7 @@ public abstract class BaseBenchmark {
     protected int iterations = 1;
     protected static Map<ModelType,TestableModel> networks;
     protected boolean train = true;
+    protected int maxIteration = 500;
 
     public void benchmarkCNN(int height, int width, int channels, int numLabels, int batchSize, int seed, String datasetName, DataSetIterator iter, ModelType modelType, int numGPUs) throws Exception {
         log.info("Building models for "+modelType+"....");
@@ -65,41 +65,40 @@ public abstract class BaseBenchmark {
 
             File locationToSave = new File(net.getKey().toString() +".zip");
 
-            if(locationToSave.exists() == true){
-                log.info("===== load presaved model and skip training =====");
-                if (model instanceof MultiLayerNetwork)
-                    model = ModelSerializer.restoreMultiLayerNetwork(locationToSave, true);
-                else if (model instanceof ComputationGraph)
-                    model = ModelSerializer.restoreComputationGraph(locationToSave, true);
-
-                model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
-            }else {
-                log.info("===== Benchmarking training iteration =====");
-                long epochTime = System.currentTimeMillis();
-                if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
-                    if (model instanceof MultiLayerNetwork)
-                        ((MultiLayerNetwork) model).fit(iter);
-                    if (model instanceof ComputationGraph)
-                        ((ComputationGraph) model).fit(iter);
-                } else { // multiple gpu mode
-                    numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
-                    ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
-                            .prefetchBuffer(16 * numGPUs)
-                            .reportScoreAfterAveraging(true)
-                            .averagingFrequency(10)
-                            .useLegacyAveraging(false)
-                            .useMQ(true)
-                            .workers(numGPUs)
-                            .build();
-
-                    pw.fit(iter);
+            log.info("===== Benchmarking training iteration =====");
+            long epochTime = System.currentTimeMillis();
+            if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
+                int nIteration = 0;
+                if (model instanceof MultiLayerNetwork) {
+//                        ((MultiLayerNetwork) model).fit(iter);
+                    while(iter.hasNext() && nIteration < maxIteration){
+                        ((MultiLayerNetwork) model).fit(iter.next());
+                        nIteration++;
+                    }
+                }else if (model instanceof ComputationGraph) {
+//                        ((ComputationGraph) model).fit(iter);
+                    while(iter.hasNext() && nIteration < maxIteration){
+                        ((MultiLayerNetwork) model).fit(iter.next());
+                        nIteration++;
+                    }
                 }
+            } else { // multiple gpu mode
+                numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
+                ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
+                        .prefetchBuffer(numGPUs)
+                        .reportScoreAfterAveraging(true)
+                        .averagingFrequency(10)
+                        .useLegacyAveraging(false)
+                        .useMQ(true)
+                        .workers(numGPUs)
+                        .build();
 
-                epochTime = System.currentTimeMillis() - epochTime;
-                report.setAvgEpochTime(epochTime);
-
-                ModelSerializer.writeModel(model, locationToSave, true);
+                pw.fit(iter);
+                pw.close();
             }
+
+            epochTime = System.currentTimeMillis() - epochTime;
+            report.setAvgEpochTime(epochTime);
 
             log.info("===== Benchmarking forward/backward pass =====");
             /*
@@ -112,7 +111,7 @@ public abstract class BaseBenchmark {
             long totalBackward = 0;
             long nIterations = 0;
             if(model instanceof MultiLayerNetwork) {
-                while(iter.hasNext() && nIterations < 1000) {
+                while(iter.hasNext() && nIterations < maxIteration) {
                     DataSet ds = iter.next();
                     INDArray input = ds.getFeatures();
                     INDArray labels = ds.getLabels();
@@ -138,7 +137,9 @@ public abstract class BaseBenchmark {
                 }
             }
             if(model instanceof ComputationGraph) {
-                while(iter.hasNext() && nIterations < 1000) {
+                log.info(((ComputationGraph) model).getListeners().toString());
+                log.info(((ComputationGraph) model).getListeners().size()+"");
+                while(iter.hasNext() && nIterations < maxIteration) {
                     DataSet ds = iter.next();
                     INDArray input = ds.getFeatures();
                     INDArray labels = ds.getLabels();
