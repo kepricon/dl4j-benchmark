@@ -28,6 +28,7 @@ public abstract class BaseBenchmark {
     protected int iterations = 1;
     protected static Map<ModelType,TestableModel> networks;
     protected boolean train = true;
+    protected int maxIteration = 500;
 
     public void benchmarkCNN(int height, int width, int channels, int numLabels, int batchSize, int seed, String datasetName, DataSetIterator iter, ModelType modelType, int numGPUs) throws Exception {
         log.info("Building models for "+modelType+"....");
@@ -63,16 +64,25 @@ public abstract class BaseBenchmark {
 
 
             long epochTime = System.currentTimeMillis();
-            log.info("===== Benchmarking training iteration =====");
-            if(numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
-                if (model instanceof MultiLayerNetwork)
-                    ((MultiLayerNetwork) model).fit(iter);
-                if (model instanceof ComputationGraph)
-                    ((ComputationGraph) model).fit(iter);
+            if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
+                int nIteration = 0;
+                if (model instanceof MultiLayerNetwork) {
+//                        ((MultiLayerNetwork) model).fit(iter);
+                    while(iter.hasNext() && nIteration < maxIteration){
+                        ((MultiLayerNetwork) model).fit(iter.next());
+                        nIteration++;
+                    }
+                }else if (model instanceof ComputationGraph) {
+//                        ((ComputationGraph) model).fit(iter);
+                    while(iter.hasNext() && nIteration < maxIteration){
+                        ((ComputationGraph) model).fit(iter.next());
+                        nIteration++;
+                    }
+                }
             } else { // multiple gpu mode
                 numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
                 ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
-                        .prefetchBuffer(16 * numGPUs)
+                        .prefetchBuffer(numGPUs)
                         .reportScoreAfterAveraging(true)
                         .averagingFrequency(10)
                         .useLegacyAveraging(false)
@@ -81,10 +91,11 @@ public abstract class BaseBenchmark {
                         .build();
 
                 pw.fit(iter);
+                pw.close();
             }
+
             epochTime = System.currentTimeMillis() - epochTime;
             report.setAvgEpochTime(epochTime);
-
 
             log.info("===== Benchmarking forward/backward pass =====");
             /*
@@ -97,7 +108,7 @@ public abstract class BaseBenchmark {
             long totalBackward = 0;
             long nIterations = 0;
             if(model instanceof MultiLayerNetwork) {
-                while(iter.hasNext()) {
+                while(iter.hasNext() && nIterations < maxIteration) {
                     DataSet ds = iter.next();
                     INDArray input = ds.getFeatures();
                     INDArray labels = ds.getLabels();
@@ -123,7 +134,7 @@ public abstract class BaseBenchmark {
                 }
             }
             if(model instanceof ComputationGraph) {
-                while(iter.hasNext()) {
+                while(iter.hasNext() && nIterations < maxIteration) {
                     DataSet ds = iter.next();
                     INDArray input = ds.getFeatures();
                     INDArray labels = ds.getLabels();
@@ -160,9 +171,4 @@ public abstract class BaseBenchmark {
             System.out.println(report.toString());
         }
     }
-
-
-
-
-
 }

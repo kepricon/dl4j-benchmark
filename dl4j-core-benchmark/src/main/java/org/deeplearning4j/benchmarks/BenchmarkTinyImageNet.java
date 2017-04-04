@@ -27,8 +27,8 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
     public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
     public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES; // you can also use
-    @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
-    public static int trainBatchSize = 64;
+//    @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
+//    public static int trainBatchSize = 32;
     @Option(name="--preProcess",usage="Set preprocess.",aliases = "-pre")
     public static boolean preProcess = true;
     @Option(name="--deviceCache",usage="Set CUDA device cache.",aliases = "-dcache")
@@ -40,15 +40,20 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
     @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
     public static int gcWindow = 300;
 
-    protected int height = 224;
-    protected int width = 224;
-    protected int channels = 3;
-    protected int numLabels = 200;
-    protected String datasetName  = "TinyImageNet";
+    @Option(name="--width",usage="Set WIDTH_SIZE.",aliases = "-w")
+    private static int width = 160;
+    @Option(name="--height",usage="Set HEIGHT_SIZE.",aliases = "-h")
+    private static int height = 160;
+    @Option(name="--channel",usage="Set CHANNEL_SIZE.",aliases = "-c")
+    private static int channels = 3;
+    @Option(name="--batch",usage="Set BATCH_SIZE.",aliases = "-b")
+    private static int batchSize = 32;
+    protected String datasetName  = "tiny";
     protected int seed = 42;
+    private int numLabels = 200;
 
-    public static final String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_train/");
-    public static final String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_test/");
+    public static String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_train/");
+    public static String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_test/");
 
     public void run(String[] args) throws Exception {
         // Parse command line arguments if they exist
@@ -61,6 +66,8 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
             parser.printUsage(System.err);
         }
 
+        TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_" +datasetName+"_"+batchSize+"batch_"+height+"x"+width+"/dl4j_tinyimagenet_train/");
+        TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_"+datasetName+"_"+batchSize+"batch_"+height+"x"+width+"/dl4j_tinyimagenet_test/");
         // memory management optimizations
 //        CudaEnvironment.getInstance().getConfiguration()
 //                .allowMultiGPU(numGPUs > 1 ? true : false)
@@ -79,7 +86,7 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
         DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(TRAIN_PATH));
 //        train = new AsyncDataSetIterator(train);
 
-        benchmarkCNN(height, width, channels, numLabels, trainBatchSize, seed, datasetName, train, modelType, numGPUs);
+        benchmarkCNN(height, width, channels, numLabels, batchSize, seed, datasetName, train, modelType, numGPUs);
     }
 
     public static void main(String[] args) throws Exception {
