@@ -47,6 +47,14 @@ public abstract class BaseBenchmark {
         benchmark(dimensions, iter, numGPUs);
     }
 
+    public void benchmarkMLP(int height, int width, int channels, int numLabels, int batchSize, int seed, String datasetName, DataSetIterator iter, ModelType modelType, int numGPUs) throws Exception {
+        log.info("Building models for "+modelType+"....");
+        networks = ModelSelector.select(modelType, height, width, channels, numLabels, seed, iterations);
+        String dimensions = datasetName+" "+batchSize+"x"+channels+"x"+height+"x"+width;
+
+        benchmark(dimensions, iter, numGPUs);
+    }
+
     private void benchmark(String description, DataSetIterator iter, int numGPUs) throws Exception {
         long totalTime = System.currentTimeMillis();
 

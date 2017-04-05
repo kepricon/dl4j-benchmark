@@ -13,5 +13,6 @@ public enum ModelType {
     FACENETNN4,
     LENET,
     RNN,
-    W2VSENTIMENT
+    W2VSENTIMENT,
+    SIMPLEMLP
 }

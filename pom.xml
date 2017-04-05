@@ -18,12 +18,12 @@
     <description>Examples of training different data sets</description>
 
     <properties>
-        <dl4j.version>0.8.1-SNAPSHOT</dl4j.version>
-        <nd4j.version>0.8.1-SNAPSHOT</nd4j.version>
-        <datavec.version>0.8.1-SNAPSHOT</datavec.version>
-        <!--<dl4j.version>0.8.0</dl4j.version>-->
-        <!--<nd4j.version>0.8.0</nd4j.version>-->
-        <!--<datavec.version>0.8.0</datavec.version>-->
+        <!--<dl4j.version>0.8.1-SNAPSHOT</dl4j.version>-->
+        <!--<nd4j.version>0.8.1-SNAPSHOT</nd4j.version>-->
+        <!--<datavec.version>0.8.1-SNAPSHOT</datavec.version>-->
+        <dl4j.version>0.8.0</dl4j.version>
+        <nd4j.version>0.8.0</nd4j.version>
+        <datavec.version>0.8.0</datavec.version>
         <jackson.version>2.4.4</jackson.version>
         <scala.version>2.11.6</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
