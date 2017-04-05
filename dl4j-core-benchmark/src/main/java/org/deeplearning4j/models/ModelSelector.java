@@ -3,6 +3,7 @@ package org.deeplearning4j.models;
 import com.beust.jcommander.ParameterException;
 import org.deeplearning4j.models.cnn.*;
 import org.deeplearning4j.models.cnn.VGG16;
+import org.deeplearning4j.models.mlp.SimpleMLP;
 import org.deeplearning4j.models.rnn.W2VSentiment;
 
 import java.util.HashMap;
@@ -52,6 +53,9 @@ public class ModelSelector {
                 break;
             case W2VSENTIMENT:
                 netmap.put(ModelType.W2VSENTIMENT, new W2VSentiment());
+                break;
+            case SIMPLEMLP:
+                netmap.put(ModelType.SIMPLEMLP, new SimpleMLP(height, width, channels, numLabels, seed));
                 break;
 
             default:

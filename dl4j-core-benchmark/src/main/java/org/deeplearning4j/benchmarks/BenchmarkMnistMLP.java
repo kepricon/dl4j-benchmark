@@ -8,30 +8,26 @@ import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-//import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+//import org.nd4j.jita.conf.CudaEnvironment;
+
 /**
  * Created by kepricon on 17. 3. 30.
  */
 @Slf4j
-public class BenchmarkMnist extends BaseBenchmark {
+public class BenchmarkMnistMLP extends BaseBenchmark {
 
-    // values to pass in from command line when compiled, esp running remotely
-//    @Option(name = "--modelType", usage = "Model type (e.g. LENET, VGG16, or CNN).", aliases = "-model")
-    public static ModelType modelType = ModelType.LENET;
+    public static ModelType modelType = ModelType.SIMPLEMLP;
     @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
     public int numGPUs = 0;
     @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
     public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES; // you can also use
-//    @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
-//    public static int trainBatchSize = 125;
     @Option(name="--deviceCache",usage="Set CUDA device cache.",aliases = "-dcache")
     public static long deviceCache = 6L;
     @Option(name="--hostCache",usage="Set CUDA host cache.",aliases = "-hcache")
@@ -88,10 +84,10 @@ public class BenchmarkMnist extends BaseBenchmark {
         DataSetIterator train = new AsyncDataSetIterator(exsitingTrain);
         DataSetIterator test = new AsyncDataSetIterator(exsitingTest);
 
-        benchmarkCNN(height, width, channels, numLabels, MnistDataSetBuilder.batchSize, seed, datasetName, train, modelType, numGPUs);
+        benchmarkMLP(height, width, channels, numLabels, MnistDataSetBuilder.batchSize, seed, datasetName, train, modelType, numGPUs);
     }
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkMnist().run(args);
+        new BenchmarkMnistMLP().run(args);
     }
 }
