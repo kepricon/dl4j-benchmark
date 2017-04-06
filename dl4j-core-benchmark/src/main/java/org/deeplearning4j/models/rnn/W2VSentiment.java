@@ -15,7 +15,20 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 /**
- * Created by kepricon on 17. 3. 28.
+ * * This example is almost identical to the GravesLSTMCharModellingExample, except that it utilizes the ComputationGraph
+ * architecture instead of MultiLayerNetwork architecture. See the javadoc in that example for details.
+ * For more details on the ComputationGraph architecture, see http://deeplearning4j.org/compgraph
+ *
+ * In addition to the use of the ComputationGraph a, this version has skip connections between the first and output layers,
+ * in order to show how this configuration is done. In practice, this means we have the following types of connections:
+ * (a) first layer -> second layer connections
+ * (b) first layer -> output layer connections
+ * (c) second layer -> output layer connections
+ *
+ * @author Alex Black
+ *
+ * modified by kepricon on 17. 3. 28.
+ *
  */
 public class W2VSentiment implements TestableModel {
 

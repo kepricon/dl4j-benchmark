@@ -38,7 +38,7 @@ public class VGG16 implements TestableModel {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
-                .activation("relu")
+                .activation(Activation.RELU)
                 .updater(Updater.NESTEROVS)
                 // TODO pretrain with smaller net for first couple CNN layer weights, use Distribution for rest OR http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf with Relu
                 .weightInit(WeightInit.RELU)
@@ -146,7 +146,7 @@ public class VGG16 implements TestableModel {
                 .layer(20, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .name("output")
                         .nOut(numLabels)
-                        .activation("softmax")
+                        .activation(Activation.SOFTMAX)
                         .build())
                 .backprop(true)
                 .pretrain(false)
