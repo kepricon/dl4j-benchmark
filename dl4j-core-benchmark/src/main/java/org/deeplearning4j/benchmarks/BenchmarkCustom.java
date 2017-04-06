@@ -1,5 +1,8 @@
 package org.deeplearning4j.benchmarks;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
 import org.datavec.api.io.filters.BalancedPathFilter;
 import org.datavec.api.io.filters.PathFilter;
@@ -14,9 +17,6 @@ import org.datavec.image.transform.ImageTransform;
 import org.datavec.image.transform.ResizeImageTransform;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -30,23 +30,23 @@ import java.util.Random;
 public class BenchmarkCustom extends BaseBenchmark {
 
     // values to pass in from command line when compiled, esp running remotely
-    @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-model")
+    @Parameter(names = {"-model","--modelType"}, description = "Model type (e.g. ALEXNET, VGG16, or CNN).")
     public static ModelType modelType = ModelType.ALEXNET;
-    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
+    @Parameter(names = {"-ng","--numGPUs"}, description = "How many workers to use for multiple GPUs.")
     public int numGPUs = 0;
-    @Option(name="--datasetPath",usage="Path to the parent directly of multiple directories of classes of images.",aliases = "-dataset")
+    @Parameter(names = {"-dataset","--datasetPath"}, description = "Path to the parent directly of multiple directories of classes of images.")
     public static String datasetPath = null;
-    @Option(name="--numLabels",usage="Train batch size.",aliases = "-labels")
+    @Parameter(names = {"-labels","--numLabels"}, description = "Num train labels.")
     public static int numLabels = -1;
-    @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-batch")
+    @Parameter(names = {"-nTrainB","--trainBatchSize"}, description = "Train batch size.")
     public static int trainBatchSize = 16;
-    @Option(name="--deviceCache",usage="Set CUDA device cache.",aliases = "-dcache")
+    @Parameter(names = {"-pre","--preProcess"}, description = "Set preprocess.")
     public static long deviceCache = 6L;
-    @Option(name="--hostCache",usage="Set CUDA host cache.",aliases = "-hcache")
+    @Parameter(names = {"-hcache","--hostCache"}, description = "Set CUDA host cache.")
     public static long hostCache = 12L;
-    @Option(name="--gcThreads",usage="Set Garbage Collection threads.",aliases = "-gcthreads")
+    @Parameter(names = {"-gcthreads","--gcThreads"}, description = "Set Garbage Collection threads.")
     public static int gcThreads = 5;
-    @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
+    @Parameter(names = {"-gcwindow","--gcWindow"}, description = "Set Garbage Collection window in milliseconds.")
     public static int gcWindow = 110;
 
     protected int height = 224;
@@ -57,13 +57,17 @@ public class BenchmarkCustom extends BaseBenchmark {
 
     public void run(String[] args) throws Exception {
         // Parse command line arguments if they exist
-        CmdLineParser parser = new CmdLineParser(this);
+        JCommander jcmdr = new JCommander(this);
         try {
-            parser.parseArgument(args);
-        } catch (CmdLineException e) {
-            // handling of wrong arguments
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
+            jcmdr.parse(args);
+        } catch (ParameterException e) {
+            //User provides invalid input -> print the usage info
+            jcmdr.usage();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e2) {
+            }
+            System.exit(1);
         }
 
         // memory management optimizations

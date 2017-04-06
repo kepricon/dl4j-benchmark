@@ -1,14 +1,14 @@
 package org.deeplearning4j.benchmarks;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
 import org.datavec.image.loader.CifarLoader;
 import org.datavec.image.transform.FlipImageTransform;
 import org.datavec.image.transform.ImageTransform;
 import org.deeplearning4j.datasets.iterator.impl.CifarDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -20,23 +20,23 @@ import org.nd4j.linalg.factory.Nd4j;
 public class BenchmarkCifar extends BaseBenchmark {
 
     // values to pass in from command line when compiled, esp running remotely
-    @Option(name = "--modelType", usage = "Model type (e.g. ALEXNET, VGG16, or CNN).", aliases = "-model")
+    @Parameter(names = {"-model","--modelType"}, description = "Model type (e.g. ALEXNET, VGG16, or CNN).")
     public static ModelType modelType = ModelType.ALEXNET;
-    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
+    @Parameter(names = {"-ng","--numGPUs"}, description = "How many workers to use for multiple GPUs.")
     public int numGPUs = 0;
-    @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
+    @Parameter(names = {"-nTrain","--numTrainExamples"}, description = "Num train examples.")
     public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES; // you can also use
-    @Option(name="--trainBatchSize",usage="Train batch size.",aliases = "-nTrainB")
+    @Parameter(names = {"-nTrainB","--trainBatchSize"}, description = "Train batch size.")
     public static int trainBatchSize = 125;
-    @Option(name="--preProcess",usage="Set preprocess.",aliases = "-pre")
+    @Parameter(names = {"-pre","--preProcess"}, description = "Set preprocess.")
     public static boolean preProcess = true;
-    @Option(name="--deviceCache",usage="Set CUDA device cache.",aliases = "-dcache")
+    @Parameter(names = {"-dcache","--deviceCache"}, description = "Set CUDA device cache.")
     public static long deviceCache = 6L;
-    @Option(name="--hostCache",usage="Set CUDA host cache.",aliases = "-hcache")
+    @Parameter(names = {"-hcache","--hostCache"}, description = "Set CUDA host cache.")
     public static long hostCache = 12L;
-    @Option(name="--gcThreads",usage="Set Garbage Collection threads.",aliases = "-gcthreads")
+    @Parameter(names = {"-gcthreads","--gcThreads"}, description = "Set Garbage Collection threads.")
     public static int gcThreads = 4;
-    @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
+    @Parameter(names = {"-gcwindow","--gcWindow"}, description = "Set Garbage Collection window in milliseconds.")
     public static int gcWindow = 300;
 
     protected int height = 224;
@@ -48,13 +48,17 @@ public class BenchmarkCifar extends BaseBenchmark {
 
     public void run(String[] args) throws Exception {
         // Parse command line arguments if they exist
-        CmdLineParser parser = new CmdLineParser(this);
+        JCommander jcmdr = new JCommander(this);
         try {
-            parser.parseArgument(args);
-        } catch (CmdLineException e) {
-            // handling of wrong arguments
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
+            jcmdr.parse(args);
+        } catch (ParameterException e) {
+            //User provides invalid input -> print the usage info
+            jcmdr.usage();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e2) {
+            }
+            System.exit(1);
         }
 
         // memory management optimizations

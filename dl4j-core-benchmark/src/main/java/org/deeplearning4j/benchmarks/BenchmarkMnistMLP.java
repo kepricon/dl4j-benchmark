@@ -1,13 +1,12 @@
 package org.deeplearning4j.benchmarks;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
-import org.datavec.image.loader.CifarLoader;
 import org.deeplearning4j.datasets.MnistDataSetBuilder;
 import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -24,17 +23,15 @@ import java.util.List;
 public class BenchmarkMnistMLP extends BaseBenchmark {
 
     public static ModelType modelType = ModelType.SIMPLEMLP;
-    @Option(name="--numGPUs",usage="How many workers to use for multiple GPUs.",aliases = "-ng")
+    @Parameter(names = {"-ng","--numGPUs"}, description = "How many workers to use for multiple GPUs.")
     public int numGPUs = 0;
-    @Option(name="--numTrainExamples",usage="Num train examples.",aliases = "-nTrain")
-    public static int numTrainExamples = CifarLoader.NUM_TRAIN_IMAGES; // you can also use
-    @Option(name="--deviceCache",usage="Set CUDA device cache.",aliases = "-dcache")
+    @Parameter(names = {"-dcache","--deviceCache"}, description = "Set CUDA device cache.")
     public static long deviceCache = 6L;
-    @Option(name="--hostCache",usage="Set CUDA host cache.",aliases = "-hcache")
+    @Parameter(names = {"-hcache","--hostCache"}, description = "Set CUDA host cache.")
     public static long hostCache = 12L;
-    @Option(name="--gcThreads",usage="Set Garbage Collection threads.",aliases = "-gcthreads")
+    @Parameter(names = {"-gcthreads","--gcThreads"}, description = "Set Garbage Collection threads.")
     public static int gcThreads = 4;
-    @Option(name="--gcWindow",usage="Set Garbage Collection window in milliseconds.",aliases = "-gcwindow")
+    @Parameter(names = {"-gcwindow","--gcWindow"}, description = "Set Garbage Collection window in milliseconds.")
     public static int gcWindow = 300;
 
     protected int height = 28;
@@ -47,13 +44,17 @@ public class BenchmarkMnistMLP extends BaseBenchmark {
 
     public void run(String[] args) throws Exception {
         // Parse command line arguments if they exist
-        CmdLineParser parser = new CmdLineParser(this);
+        JCommander jcmdr = new JCommander(this);
         try {
-            parser.parseArgument(args);
-        } catch (CmdLineException e) {
-            // handling of wrong arguments
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
+            jcmdr.parse(args);
+        } catch (ParameterException e) {
+            //User provides invalid input -> print the usage info
+            jcmdr.usage();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e2) {
+            }
+            System.exit(1);
         }
 
         // memory management optimizations
@@ -67,8 +68,8 @@ public class BenchmarkMnistMLP extends BaseBenchmark {
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
         Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
 
-        if (modelType == ModelType.ALL || modelType == ModelType.RNN)
-            throw new UnsupportedOperationException("Mnist benchmarks are applicable to CNN models only.");
+        if (modelType != ModelType.SIMPLEMLP)
+            throw new UnsupportedOperationException("Mnist MLP benchmarks are applicable to SIMPLE MLP models only.");
 
         log.info("Loading data...");
         if(new File(MnistDataSetBuilder.TRAIN_PATH).exists() == false) {
