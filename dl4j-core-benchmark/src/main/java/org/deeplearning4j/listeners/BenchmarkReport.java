@@ -1,5 +1,6 @@
 package org.deeplearning4j.listeners;
 
+import org.bytedeco.javacpp.cuda;
 import org.bytedeco.javacpp.cudnn;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -27,6 +28,7 @@ public class BenchmarkReport {
     private String cpuCores;
     private String blasVendor;
     private String modelSummary;
+    private String cudaVersion;
     private String cudnnVersion;
     private int numParams;
     private int numLayers;
@@ -37,7 +39,6 @@ public class BenchmarkReport {
     private double avgFeedForward;
     private double avgBackprop;
     private long avgUpdater;
-    private long avgEpochTime;
 
     public BenchmarkReport(String name, String description) {
         this.name = name;
@@ -50,6 +51,8 @@ public class BenchmarkReport {
         blasVendor = env.get("blas.vendor").toString();
 
         if(backend.equals("CUDA")){
+            cudaVersion = String.valueOf(cuda.__CUDA_API_VERSION);
+
             try {
                 cudnnVersion = String.valueOf(cudnn.cudnnGetVersion());
             }catch (UnsatisfiedLinkError e){
@@ -110,20 +113,7 @@ public class BenchmarkReport {
 
     public double avgBackprop() { return avgBackprop; }
 
-    public void setAvgEpochTime(long avgEpochTime) {
-        this.avgEpochTime = avgEpochTime;
-    }
-
-    public long getAvgEpochTime() { return this.avgEpochTime; }
-
     public String getModelSummary() { return modelSummary; }
-
-    private String getElapsedTime(long elapsedTime){
-        return String.format("%d hr %d min, %d sec",
-                elapsedTime/(1000*60*60), //hr
-                (elapsedTime%(1000*60*60))/(1000*60), //min
-                ((elapsedTime%(1000*60*60))%(1000*60))/1000); //sec
-    }
 
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##");
@@ -144,11 +134,11 @@ public class BenchmarkReport {
         table.add( new String[] { "Backend", backend } );
         table.add( new String[] { "BLAS Vendor", blasVendor } );
         if(backend.equals("CUDA")){
-            table.add( new String[] { "Cudnn", cudnnVersion } );
+            table.add( new String[] { "CUDA Version", cudaVersion } );
+            table.add( new String[] { "CUDNN Version", cudnnVersion } );
         }
         table.add( new String[] { "Total Params", Integer.toString(numParams) } );
         table.add( new String[] { "Total Layers", Integer.toString(numLayers) } );
-        table.add( new String[] { "Avg Epoch Time", getElapsedTime(avgEpochTime) } );
         table.add( new String[] { "Avg Feedforward (ms)", df.format(avgFeedForward) } );
         table.add( new String[] { "Avg Backprop (ms)", df.format(avgBackprop) } );
         table.add( new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) } );

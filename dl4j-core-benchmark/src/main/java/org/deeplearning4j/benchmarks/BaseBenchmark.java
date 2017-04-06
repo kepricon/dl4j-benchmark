@@ -71,8 +71,6 @@ public abstract class BaseBenchmark {
 
             model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
 
-            File locationToSave = new File(net.getKey().toString() +".zip");
-
             log.info("===== Benchmarking training iteration =====");
             long epochTime = System.currentTimeMillis();
             if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
@@ -105,9 +103,6 @@ public abstract class BaseBenchmark {
                 pw.fit(iter);
                 pw.close();
             }
-
-            epochTime = System.currentTimeMillis() - epochTime;
-            report.setAvgEpochTime(epochTime);
 
             log.info("===== Benchmarking forward/backward pass =====");
             /*
@@ -146,8 +141,6 @@ public abstract class BaseBenchmark {
                 }
             }
             if(model instanceof ComputationGraph) {
-                log.info(((ComputationGraph) model).getListeners().toString());
-                log.info(((ComputationGraph) model).getListeners().size()+"");
                 while(iter.hasNext() && nIterations < maxIteration) {
                     DataSet ds = iter.next();
                     INDArray input = ds.getFeatures();
