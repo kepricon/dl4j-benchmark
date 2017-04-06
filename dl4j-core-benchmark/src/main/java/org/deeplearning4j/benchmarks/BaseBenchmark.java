@@ -97,8 +97,9 @@ public abstract class BaseBenchmark {
                         .reportScoreAfterAveraging(true)
                         .averagingFrequency(10)
                         .useLegacyAveraging(false)
-                        .useMQ(true)
+                        .useMQ(false)
                         .workers(numGPUs)
+                        .averageUpdaters(false)
                         .build();
 
                 pw.fit(iter);

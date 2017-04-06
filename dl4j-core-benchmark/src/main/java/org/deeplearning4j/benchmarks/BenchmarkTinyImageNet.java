@@ -7,6 +7,7 @@ import org.deeplearning4j.models.ModelType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -72,8 +73,11 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
         CudaEnvironment.getInstance().getConfiguration()
                 .allowMultiGPU(numGPUs > 1 ? true : false)
                 .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+                .allowCrossDeviceAccess(true)
+                .setMaximumDeviceCacheableLength(32 * 1024 * 1024)
                 .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
                 .setNumberOfGcThreads(gcThreads);
+
         Nd4j.create(1);
         Nd4j.getMemoryManager().togglePeriodicGc(true);
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
