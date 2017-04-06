@@ -1,5 +1,8 @@
 package org.deeplearning4j.benchmarks;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.listeners.BenchmarkListener;
 import org.deeplearning4j.listeners.BenchmarkReport;
@@ -11,12 +14,12 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.parallelism.ParallelWrapper;
+import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -25,11 +28,54 @@ import java.util.Map;
  */
 @Slf4j
 public abstract class BaseBenchmark {
+    @Parameter(names = {"-ng","--numGPUs"}, description = "How many workers to use for multiple GPUs.")
+    protected int numGPUs = 0;
+    @Parameter(names = {"-dcache","--deviceCache"}, description = "Set CUDA device cache.")
+    protected long deviceCache = 6L;
+    @Parameter(names = {"-dcachelength","--deviceCacheLength"}, description = "Set CUDA device cache length.")
+    protected long deviceCacheLength = 32L;
+    @Parameter(names = {"-hcache","--hostCache"}, description = "Set CUDA host cache.")
+    protected long hostCache = 12L;
+    @Parameter(names = {"-gcthreads","--gcThreads"}, description = "Set Garbage Collection threads.")
+    protected int gcThreads = 4;
+    @Parameter(names = {"-gcwindow","--gcWindow"}, description = "Set Garbage Collection window in milliseconds.")
+    protected int gcWindow = 300;
+    @Parameter(names = {"-miter","--maxIteration"}, description = "Max Iteration. -1 means no limit")
+    protected long maxIteration = -1;
+
     protected int listenerFreq = 10;
     protected int iterations = 1;
     protected static Map<ModelType,TestableModel> networks;
-    protected boolean train = true;
-    protected int maxIteration = 500;
+
+    public void init(String[] args){
+        // Parse command line arguments if they exist
+        JCommander jcmdr = new JCommander(this);
+        try {
+            jcmdr.parse(args);
+        } catch (ParameterException e) {
+            //User provides invalid input -> print the usage info
+            jcmdr.usage();
+            try {
+                Thread.sleep(500);
+            } catch (Exception e2) {
+            }
+            System.exit(1);
+        }
+
+        // memory management optimizations
+        CudaEnvironment.getInstance().getConfiguration()
+                .allowMultiGPU(numGPUs > 1 ? true : false)
+                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+                .allowCrossDeviceAccess(true)
+                .setMaximumDeviceCacheableLength(deviceCacheLength * 1024L * 1024L)
+                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
+                .setNumberOfGcThreads(gcThreads);
+
+        Nd4j.create(1);
+        Nd4j.getMemoryManager().togglePeriodicGc(true);
+        Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
+        Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
+    }
 
     public void benchmarkCNN(int height, int width, int channels, int numLabels, int batchSize, int seed, String datasetName, DataSetIterator iter, ModelType modelType, int numGPUs) throws Exception {
         log.info("Building models for "+modelType+"....");
@@ -72,23 +118,21 @@ public abstract class BaseBenchmark {
             model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
 
             log.info("===== Benchmarking training iteration =====");
-            long epochTime = System.currentTimeMillis();
             if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
-                int nIteration = 0;
+                long nIterations = 0;
                 if (model instanceof MultiLayerNetwork) {
-//                        ((MultiLayerNetwork) model).fit(iter);
-                    while(iter.hasNext() && nIteration < maxIteration){
+                    while(iter.hasNext() && (maxIteration == -1 || nIterations < maxIteration)){
                         ((MultiLayerNetwork) model).fit(iter.next());
-                        nIteration++;
+                        nIterations++;
                     }
                 }else if (model instanceof ComputationGraph) {
-//                        ((ComputationGraph) model).fit(iter);
-                    while(iter.hasNext() && nIteration < maxIteration){
+                    while(iter.hasNext() && (maxIteration == -1 || nIterations < maxIteration)){
                         ((ComputationGraph) model).fit(iter.next());
-                        nIteration++;
+                        nIterations++;
                     }
                 }
             } else { // multiple gpu mode
+                // TODO: 17. 4. 6 if there is a way to set max iteration for PW, should apply it
                 numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
                 ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
                         .prefetchBuffer(numGPUs)
@@ -110,65 +154,7 @@ public abstract class BaseBenchmark {
                 and backward. This is consistent with benchmarks seen in the wild like this code:
                 https://github.com/jcjohnson/cnn-benchmarks/blob/master/cnn_benchmark.lua
              */
-            iter.reset(); // prevents NPE
-            long totalForward = 0;
-            long totalBackward = 0;
-            long nIterations = 0;
-            if(model instanceof MultiLayerNetwork) {
-                while(iter.hasNext() && nIterations < maxIteration) {
-                    DataSet ds = iter.next();
-                    INDArray input = ds.getFeatures();
-                    INDArray labels = ds.getLabels();
-
-                    // forward
-                    long forwardTime = System.currentTimeMillis();
-                    ((MultiLayerNetwork) model).setInput(input);
-                    ((MultiLayerNetwork) model).setLabels(labels);
-                    ((MultiLayerNetwork) model).feedForward();
-                    forwardTime = System.currentTimeMillis() - forwardTime;
-                    totalForward += forwardTime;
-
-                    // backward
-                    long backwardTime = System.currentTimeMillis();
-                    Method m = MultiLayerNetwork.class.getDeclaredMethod("backprop"); // requires reflection
-                    m.setAccessible(true);
-                    m.invoke(model);
-                    backwardTime = System.currentTimeMillis() - backwardTime;
-                    totalBackward += backwardTime;
-
-                    nIterations += 1;
-                    if(nIterations % 100 == 0) log.info("Completed "+nIterations+" iterations");
-                }
-            }
-            if(model instanceof ComputationGraph) {
-                while(iter.hasNext() && nIterations < maxIteration) {
-                    DataSet ds = iter.next();
-                    INDArray input = ds.getFeatures();
-                    INDArray labels = ds.getLabels();
-
-                    // forward
-                    long forwardTime = System.currentTimeMillis();
-                    ((ComputationGraph) model).setInput(0, input);
-                    ((ComputationGraph) model).setLabel(0, labels);
-                    ((ComputationGraph) model).feedForward();
-                    forwardTime = System.currentTimeMillis() - forwardTime;
-                    totalForward += forwardTime;
-
-                    // backward
-                    long backwardTime = System.currentTimeMillis();
-                    Method m = ComputationGraph.class.getDeclaredMethod("calcBackpropGradients", boolean.class, INDArray[].class);
-                    m.setAccessible(true);
-                    m.invoke(model, false, new INDArray[0]);
-                    backwardTime = System.currentTimeMillis() - backwardTime;
-                    totalBackward += backwardTime;
-
-                    nIterations += 1;
-                    if(nIterations % 100 == 0) log.info("Completed "+nIterations+" iterations");
-                }
-            }
-            report.setAvgFeedForward((double) totalForward / (double) nIterations);
-            report.setAvgBackprop((double) totalBackward / (double) nIterations);
-
+            calcFwdBwdTime(model, iter, report);
 
             log.info("=============================");
             log.info("===== Benchmark Results =====");
@@ -177,5 +163,53 @@ public abstract class BaseBenchmark {
             System.out.println(report.getModelSummary());
             System.out.println(report.toString());
         }
+    }
+
+    private void calcFwdBwdTime(Model model, DataSetIterator iter, BenchmarkReport report) throws Exception {
+        iter.reset(); // prevents NPE
+        long totalForward = 0;
+        long totalBackward = 0;
+        long nIterations = 0;
+
+        while(iter.hasNext() && (maxIteration == -1 || nIterations < maxIteration)) {
+            DataSet ds = iter.next();
+            INDArray input = ds.getFeatures();
+            INDArray labels = ds.getLabels();
+
+            // forward
+            long forwardTime = System.currentTimeMillis();
+            if(model instanceof MultiLayerNetwork){
+                ((MultiLayerNetwork) model).setInput(input);
+                ((MultiLayerNetwork) model).setLabels(labels);
+                ((MultiLayerNetwork) model).feedForward();
+            }else if(model instanceof ComputationGraph){
+                ((ComputationGraph) model).setInput(0, input);
+                ((ComputationGraph) model).setLabel(0, labels);
+                ((ComputationGraph) model).feedForward();
+            }
+            forwardTime = System.currentTimeMillis() - forwardTime;
+            totalForward += forwardTime;
+
+            // backward
+            long backwardTime = System.currentTimeMillis();
+            if(model instanceof MultiLayerNetwork){
+                Method m = MultiLayerNetwork.class.getDeclaredMethod("backprop"); // requires reflection
+                m.setAccessible(true);
+                m.invoke(model);
+            }else if(model instanceof ComputationGraph){
+                Method m = ComputationGraph.class.getDeclaredMethod("calcBackpropGradients", boolean.class, INDArray[].class);
+                m.setAccessible(true);
+                m.invoke(model, false, new INDArray[0]);
+            }
+
+            backwardTime = System.currentTimeMillis() - backwardTime;
+            totalBackward += backwardTime;
+
+            nIterations += 1;
+            if(nIterations % 100 == 0) log.info("Completed "+nIterations+" iterations");
+        }
+
+        report.setAvgFeedForward((double) totalForward / (double) nIterations);
+        report.setAvgBackprop((double) totalBackward / (double) nIterations);
     }
 }
