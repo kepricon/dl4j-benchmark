@@ -12,22 +12,26 @@ import org.datavec.api.writable.Text;
 import org.datavec.api.writable.Writable;
 import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.util.ArchiveUtils;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by kepricon on 17. 4. 1.
  */
 @Slf4j
 public class TinyImageNetDataSetBuilder {
-    @Parameter(names = {"-p","--data_root_path"}, description = "DATA_ROOT_PATH")
-    private static final String DATA_ROOT_DIR = "/home/nvadmin/tiny-imagenet-200/";
+    private static final String DATA_URL = "http://cs231n.stanford.edu/tiny-imagenet-200.zip";
+    private static final String DATA_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "tiny-imagenet");
+    private static final String DATA_ROOT_DIR = FilenameUtils.concat(DATA_PATH, "tiny-imagenet-200/");
     private static final String LABEL_ID_FILE = DATA_ROOT_DIR + "wnids.txt";
     private static final String LABEL_NAME_FILE = DATA_ROOT_DIR + "words.txt";
     private static final String TRAIN_DIR = DATA_ROOT_DIR + "train/";
@@ -50,7 +54,7 @@ public class TinyImageNetDataSetBuilder {
     public static String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tiny_32batch_160/dl4j_tinyimagenet_train/");
     public static String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tiny_32batch_160/dl4j_tinyimagenet_test/");
 
-    public void run(String[] args) throws IOException {
+    public void run(String[] args) throws Exception {
         JCommander jcmdr = new JCommander(this);
         try {
             jcmdr.parse(args);
@@ -64,11 +68,10 @@ public class TinyImageNetDataSetBuilder {
             System.exit(1);
         }
 
+        downloadData();
+
         TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_" +dataSetName+"_"+batchSize+"batch_"+height+"x"+width+"/dl4j_tinyimagenet_train/");
         TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_"+dataSetName+"_"+batchSize+"batch_"+height+"x"+width+"/dl4j_tinyimagenet_test/");
-
-        System.out.println(TRAIN_PATH);
-        System.out.println(TEST_PATH);
 
         if(new File(TRAIN_PATH).exists() == false){
 
@@ -95,22 +98,79 @@ public class TinyImageNetDataSetBuilder {
 
             log.info("create train datasets in " + TRAIN_PATH);
             new File(TRAIN_PATH).mkdirs();
-            AtomicInteger counter = new AtomicInteger(0);
 
+            AtomicInteger counter = new AtomicInteger(0);
             while(trainData.hasNext()){
                 String path = FilenameUtils.concat(TRAIN_PATH, "dataset-" + (counter.getAndIncrement()) + ".bin");
                 trainData.next().save(new File(path));
+
+                if (counter.get() % 100 == 0) {
+                    log.info("{} datasets saved so far...", counter.get());
+                }
             }
 
-            log.info("create test datasets in " + TEST_PATH);
-            new File(TEST_PATH).mkdirs();
-            counter = new AtomicInteger(0);
-            while(testData.hasNext()){
-                String path = FilenameUtils.concat(TEST_PATH, "dataset-" +  (counter.getAndIncrement()) + ".bin");
-                testData.next().save(new File(path));
-            }
+//            log.info("create test datasets in " + TEST_PATH);
+//            new File(TEST_PATH).mkdirs();
+//
+//            counter = new AtomicInteger(0);
+//            while(testData.hasNext()){
+//                String path = FilenameUtils.concat(TEST_PATH, "dataset-" +  (counter.getAndIncrement()) + ".bin");
+//                testData.next().save(new File(path));
+//
+//                if (counter.get() % 100 == 0) {
+//                    log.info("{} datasets saved so far...", counter.get());
+//                }
+//            }
 
         }
+    }
+
+    private static void downloadData() throws Exception{
+
+        File directory = new File(DATA_PATH);
+        if (false == directory.exists()) {
+            directory.mkdirs();
+        }
+
+        File zipFile = new File(DATA_PATH, "tiny-imagenet-200.zip");
+
+        if (false == zipFile.exists()){
+            log.info("Starting data download (248MB) ...");
+            FileUtils.copyURLToFile(new URL(DATA_URL), zipFile);
+            log.info("Data (.zip file) downloaded to " + zipFile.getAbsolutePath());
+            extractZip(zipFile.getAbsolutePath(), DATA_PATH);
+        }
+    }
+
+
+    private static final int BUFFER_SIZE = 4096;
+    private static void extractZip(String filePath, String outputPath) throws IOException {
+        int fileCount = 0;
+        int dirCount = 0;
+        log.info("Extracting files");
+
+        try(ZipInputStream zis = new ZipInputStream(new FileInputStream(filePath))){
+            ZipEntry entry;
+
+            while ((entry = zis.getNextEntry()) != null){
+                if(entry.isDirectory()){
+                    new File(outputPath, entry.getName()).mkdirs();
+                    dirCount++;
+                }else {
+                    int count;
+                    byte data[] = new byte[BUFFER_SIZE];
+
+                    FileOutputStream fos = new FileOutputStream(new File(outputPath, entry.getName()));
+                    BufferedOutputStream dest = new BufferedOutputStream(fos,BUFFER_SIZE);
+                    while ((count = zis.read(data, 0, BUFFER_SIZE)) != -1) {
+                        dest.write(data, 0, count);
+                    }
+                    dest.close();
+                    fileCount++;
+                }
+            }
+        }
+        log.info("\n" + fileCount + " files and " + dirCount + " directories extracted to: " + outputPath);
     }
 
     private static List<String> loadLabels(String path) throws IOException {
@@ -198,7 +258,7 @@ public class TinyImageNetDataSetBuilder {
         return validation;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         new TinyImageNetDataSetBuilder().run(args);
     }
 }
