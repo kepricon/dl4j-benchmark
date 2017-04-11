@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
+import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.listeners.BenchmarkListener;
 import org.deeplearning4j.listeners.BenchmarkReport;
 import org.deeplearning4j.models.ModelSelector;
@@ -104,6 +105,10 @@ public abstract class BaseBenchmark {
     private void benchmark(String description, DataSetIterator iter, int numGPUs) throws Exception {
         long totalTime = System.currentTimeMillis();
 
+        if (maxIteration != -1){
+            iter = new MultipleEpochsIterator(iter, maxIteration);
+        }
+
         log.info("========================================");
         log.info("===== Benchmarking selected models =====");
         log.info("========================================");
@@ -119,20 +124,12 @@ public abstract class BaseBenchmark {
 
             log.info("===== Benchmarking training iteration =====");
             if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
-                long nIterations = 0;
                 if (model instanceof MultiLayerNetwork) {
-                    while(iter.hasNext() && (maxIteration == -1 || nIterations < maxIteration)){
-                        ((MultiLayerNetwork) model).fit(iter.next());
-                        nIterations++;
-                    }
+                    ((MultiLayerNetwork) model).fit(iter);
                 }else if (model instanceof ComputationGraph) {
-                    while(iter.hasNext() && (maxIteration == -1 || nIterations < maxIteration)){
-                        ((ComputationGraph) model).fit(iter.next());
-                        nIterations++;
-                    }
+                    ((ComputationGraph) model).fit(iter);
                 }
             } else { // multiple gpu mode
-                // TODO: 17. 4. 6 if there is a way to set max iteration for PW, should apply it
                 numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
                 ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
                         .prefetchBuffer(numGPUs)
@@ -171,7 +168,7 @@ public abstract class BaseBenchmark {
         long totalBackward = 0;
         long nIterations = 0;
 
-        while(iter.hasNext() && (maxIteration == -1 || nIterations < maxIteration)) {
+        while(iter.hasNext()) {
             DataSet ds = iter.next();
             INDArray input = ds.getFeatures();
             INDArray labels = ds.getLabels();
