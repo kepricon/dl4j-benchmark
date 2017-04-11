@@ -48,8 +48,8 @@ public class TinyImageNetDataSetBuilder {
     @Parameter(names = {"-b","--batch"}, description = "BATCH_SIZE")
     private static int batchSize = 32;
 
-    private static final String dataSetName = "tiny";
-    private int numLabels = 200;
+    public static final String DATASETNAME = "tiny";
+    public static final int numLabels = 200;
 
     public static String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tiny_32batch_160/dl4j_tinyimagenet_train/");
     public static String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tiny_32batch_160/dl4j_tinyimagenet_test/");
@@ -70,8 +70,8 @@ public class TinyImageNetDataSetBuilder {
 
         downloadData();
 
-        TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_" +dataSetName+"_"+batchSize+"batch_"+height+"x"+width+"/dl4j_tinyimagenet_train/");
-        TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_"+dataSetName+"_"+batchSize+"batch_"+height+"x"+width+"/dl4j_tinyimagenet_test/");
+        TRAIN_PATH = getTrainPath(height, width, batchSize);
+        TEST_PATH = getTestPath(height, width, batchSize);
 
         if(new File(TRAIN_PATH).exists() == false){
 
@@ -123,6 +123,28 @@ public class TinyImageNetDataSetBuilder {
 //            }
 
         }
+    }
+
+    public static String getTrainPath(int height, int width, int batchSize){
+        StringBuffer sb = new StringBuffer();
+        sb.append("dl4j_");
+        sb.append(DATASETNAME + "_");
+        sb.append(batchSize + "batch_");
+        sb.append(width+"x"+height);
+        sb.append("/dl4j_tinyimagenet_train/");
+
+        return FilenameUtils.concat(System.getProperty("java.io.tmpdir"), sb.toString());
+    }
+
+    public static String getTestPath(int height, int width, int batchSize){
+        StringBuffer sb = new StringBuffer();
+        sb.append("dl4j_");
+        sb.append(DATASETNAME + "_");
+        sb.append(batchSize + "batch_");
+        sb.append(width+"x"+height);
+        sb.append("/dl4j_tinyimagenet_test/");
+
+        return FilenameUtils.concat(System.getProperty("java.io.tmpdir"), sb.toString());
     }
 
     private static void downloadData() throws Exception{
