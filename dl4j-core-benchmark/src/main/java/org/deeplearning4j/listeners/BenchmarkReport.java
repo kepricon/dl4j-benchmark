@@ -13,6 +13,7 @@ import oshi.software.os.OperatingSystem;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Reporting for BenchmarkListener.
@@ -40,10 +41,23 @@ public class BenchmarkReport {
     private double avgBackprop;
     private long avgUpdater;
 
-    public BenchmarkReport(String name, String description) {
-        this.name = name;
-        this.description = description;
+    long epochTime;
+    private AtomicLong totalIterations;
+    private AtomicLong totalSamples;
 
+    private BenchmarkReport() {}
+
+    private static class Singleton {
+        private static final BenchmarkReport instance = new BenchmarkReport();
+        static {
+            instance.initialize();
+        }
+    }
+    public static BenchmarkReport getInstance() {
+        return Singleton.instance;
+    }
+
+    private void initialize() {
         Properties env = Nd4j.getExecutioner().getEnvironmentInformation();
 
         backend = env.get("backend").toString();
@@ -72,6 +86,25 @@ public class BenchmarkReport {
             SystemInfo sys = new SystemInfo();
             devices.add(sys.getHardware().getProcessor().getName());
         }
+
+        totalIterations = new AtomicLong(0);
+        totalSamples = new AtomicLong(0);
+    }
+
+    public void addTotalIterations(){
+        this.totalIterations.incrementAndGet();
+    }
+
+    public void addTotalSamples(long nSamples) {
+        this.totalSamples.addAndGet(nSamples);
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public void setDescription(String description){
+        this.description = description;
     }
 
     public void setModel(Model model) {
@@ -115,6 +148,10 @@ public class BenchmarkReport {
 
     public String getModelSummary() { return modelSummary; }
 
+    public void setEpochTime(long epochTime){
+        this.epochTime = epochTime;
+    }
+
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##");
 
@@ -144,6 +181,12 @@ public class BenchmarkReport {
         table.add( new String[] { "Avg Iteration (ms)", df.format(avgIterationTime()) } );
         table.add( new String[] { "Avg Samples/sec", df.format(avgSamplesSec()) } );
         table.add( new String[] { "Avg Batches/sec", df.format(avgBatchesSec()) } );
+
+        table.add( new String[] { "","" } );
+        table.add( new String[] { "Avg Iteration : " , df.format((double) epochTime / totalIterations.longValue()) } );
+        table.add( new String[] { "Avg Samples/sec : ", df.format((double) totalSamples.longValue() / (epochTime / 1000f)) } );
+        table.add( new String[] { "Avg batches/sec : ", df.format((double) totalIterations.longValue() / (epochTime / 1000f)) } );
+        table.add( new String[] { "Epoch Time(sec) : " , String.valueOf(epochTime / 1000f)});
 
         StringBuilder sb = new StringBuilder();
 

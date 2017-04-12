@@ -98,8 +98,11 @@ public class BenchmarkListener implements IterationListener {
             benchmarkReport.addIterationTime(timeSpent);
             if(!Double.isInfinite(samplesPerSec.get())) benchmarkReport.addSamplesSec(samplesPerSec.get());
             if(!Double.isInfinite(batchesPerSec.get())) benchmarkReport.addBatchesSec(batchesPerSec.get());
+
+            benchmarkReport.addTotalSamples(numSamples);
         }
 
+        benchmarkReport.addTotalIterations();
         lastTime.set(System.currentTimeMillis());
     }
 }

@@ -22,6 +22,7 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.Map;
 
 /**
@@ -117,11 +118,15 @@ public abstract class BaseBenchmark {
 
             log.info("Selected: "+net.getKey().toString()+" "+description);
             Model model = net.getValue().init();
-            BenchmarkReport report = new BenchmarkReport(net.getKey().toString(), description);
+//            BenchmarkReport report = new BenchmarkReport(net.getKey().toString(), description);
+            BenchmarkReport report = BenchmarkReport.getInstance();
+            report.setName(net.getKey().toString());
+            report.setDescription(description);
             report.setModel(model);
 
             model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
 
+            long epochTime = System.currentTimeMillis();
             log.info("===== Benchmarking training iteration =====");
             if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
                 if (model instanceof MultiLayerNetwork) {
@@ -144,6 +149,9 @@ public abstract class BaseBenchmark {
                 pw.fit(iter);
                 pw.close();
             }
+            epochTime = System.currentTimeMillis() - epochTime;
+            report.setEpochTime(epochTime);
+
 
             log.info("===== Benchmarking forward/backward pass =====");
             /*
@@ -151,7 +159,7 @@ public abstract class BaseBenchmark {
                 and backward. This is consistent with benchmarks seen in the wild like this code:
                 https://github.com/jcjohnson/cnn-benchmarks/blob/master/cnn_benchmark.lua
              */
-            calcFwdBwdTime(model, iter, report);
+//            calcFwdBwdTime(model, iter, report);
 
             log.info("=============================");
             log.info("===== Benchmark Results =====");
