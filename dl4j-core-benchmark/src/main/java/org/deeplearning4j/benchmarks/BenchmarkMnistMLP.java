@@ -32,9 +32,7 @@ public class BenchmarkMnistMLP extends BaseBenchmark {
     protected int seed = 42;
     protected int batch = MnistDataSetBuilder.batchSize;
 
-    public void run(String[] args) throws Exception {
-        init(args);
-
+    protected void run() throws Exception {
         if (modelType != ModelType.SIMPLEMLP)
             throw new UnsupportedOperationException("Mnist MLP benchmarks are applicable to SIMPLE MLP models only.");
 
@@ -56,6 +54,6 @@ public class BenchmarkMnistMLP extends BaseBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkMnistMLP().run(args);
+        new BenchmarkMnistMLP().execute(args);
     }
 }

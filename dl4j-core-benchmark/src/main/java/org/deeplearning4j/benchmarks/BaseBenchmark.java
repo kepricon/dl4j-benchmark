@@ -22,14 +22,13 @@ import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.lang.reflect.Method;
-import java.text.DecimalFormat;
 import java.util.Map;
 
 /**
  * Benchmarks popular CNN models using the CIFAR-10 dataset.
  */
 @Slf4j
-public abstract class BaseBenchmark {
+public abstract class BaseBenchmark implements Benchmarkable {
     @Parameter(names = {"-ng","--numGPUs"}, description = "How many workers to use for multiple GPUs.")
     protected int numGPUs = 0;
     @Parameter(names = {"-dcache","--deviceCache"}, description = "Set CUDA device cache.")
@@ -49,7 +48,16 @@ public abstract class BaseBenchmark {
     protected int iterations = 1;
     protected static Map<ModelType,TestableModel> networks;
 
-    public void init(String[] args){
+
+    @Override
+    public void execute(String[] args) throws Exception {
+        init(args);
+        run();
+    }
+
+    protected abstract void run() throws Exception;
+
+    protected void init(String[] args){
         // Parse command line arguments if they exist
         JCommander jcmdr = new JCommander(this);
         try {
@@ -159,7 +167,7 @@ public abstract class BaseBenchmark {
                 and backward. This is consistent with benchmarks seen in the wild like this code:
                 https://github.com/jcjohnson/cnn-benchmarks/blob/master/cnn_benchmark.lua
              */
-//            calcFwdBwdTime(model, iter, report);
+            calcFwdBwdTime(model, iter, report);
 
             log.info("=============================");
             log.info("===== Benchmark Results =====");

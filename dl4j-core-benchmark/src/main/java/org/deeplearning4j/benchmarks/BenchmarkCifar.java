@@ -39,9 +39,7 @@ public class BenchmarkCifar extends BaseBenchmark {
     protected String datasetName  = "CIFAR-10";
     protected int seed = 42;
 
-    public void run(String[] args) throws Exception {
-        init(args);
-
+    protected void run() throws Exception {
         if(modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("CIFAR-10 benchmarks are applicable to CNN models only.");
 
@@ -53,6 +51,6 @@ public class BenchmarkCifar extends BaseBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkCifar().run(args);
+        new BenchmarkCifar().execute(args);
     }
 }

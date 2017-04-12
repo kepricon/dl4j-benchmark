@@ -45,9 +45,7 @@ public class BenchmarkCustom extends BaseBenchmark {
     protected String datasetName = "CUSTOM";
     protected int seed = 42;
 
-    public void run(String[] args) throws Exception {
-        init(args);
-
+    protected void run() throws Exception {
         if(modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("Image benchmarks are applicable to CNN models only.");
 
@@ -77,6 +75,6 @@ public class BenchmarkCustom extends BaseBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkCustom().run(args);
+        new BenchmarkCustom().execute(args);
     }
 }

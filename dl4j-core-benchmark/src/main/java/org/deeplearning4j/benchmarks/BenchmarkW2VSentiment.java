@@ -25,9 +25,7 @@ public class BenchmarkW2VSentiment extends BaseBenchmark {
 
     protected String datasetName  = "IMDB review";
 
-    private void run(String[] args) throws Exception {
-        init(args);
-
+    protected void run() throws Exception {
         if(modelType == ModelType.ALL || modelType == ModelType.CNN)
             throw new UnsupportedOperationException("W2VSentiment benchmarks are applicable to RNN models only.");
 
@@ -38,13 +36,12 @@ public class BenchmarkW2VSentiment extends BaseBenchmark {
         DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(W2VSentimentDataSetsBuilder.TRAIN_PATH));
         DataSetIterator test = new ExistingMiniBatchDataSetIterator(new File(W2VSentimentDataSetsBuilder.TEST_PATH));
 
-
         benchmarkRNN(datasetName, train, modelType, numGPUs);
     }
 
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkW2VSentiment().run(args);
+        new BenchmarkW2VSentiment().execute(args);
     }
 
 

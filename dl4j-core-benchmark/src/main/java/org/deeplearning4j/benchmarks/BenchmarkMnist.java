@@ -34,9 +34,7 @@ public class BenchmarkMnist extends BaseBenchmark {
     protected int seed = 42;
     protected int batch = MnistDataSetBuilder.batchSize;
 
-    public void run(String[] args) throws Exception {
-        init(args);
-
+    protected void run() throws Exception {
         if (modelType == ModelType.ALL || modelType == ModelType.RNN)
             throw new UnsupportedOperationException("Mnist benchmarks are applicable to CNN models only.");
 
@@ -58,6 +56,6 @@ public class BenchmarkMnist extends BaseBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkMnist().run(args);
+        new BenchmarkMnist().execute(args);
     }
 }

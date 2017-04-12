@@ -33,9 +33,7 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
     public String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_train/");
     public String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_test/");
 
-    public void run(String[] args) throws Exception {
-        init(args);
-
+    protected void run() throws Exception {
         TRAIN_PATH = TinyImageNetDataSetBuilder.getTrainPath(height, width, batchSize);
         TEST_PATH = TinyImageNetDataSetBuilder.getTestPath(height, width, batchSize);
 
@@ -50,6 +48,6 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
     }
 
     public static void main(String[] args) throws Exception {
-        new BenchmarkTinyImageNet().run(args);
+        new BenchmarkTinyImageNet().execute(args);
     }
 }
