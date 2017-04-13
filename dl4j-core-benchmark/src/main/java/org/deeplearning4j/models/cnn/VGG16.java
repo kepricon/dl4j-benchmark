@@ -37,6 +37,7 @@ public class VGG16 implements TestableModel {
     public MultiLayerConfiguration conf() {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .workspaceMode(WorkspaceMode.SINGLE)
                 .seed(seed)
                 .activation(Activation.RELU)
                 .updater(Updater.NESTEROVS)

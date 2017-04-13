@@ -69,6 +69,7 @@ public class InceptionResNetV1 implements TestableModel {
   public ComputationGraphConfiguration.GraphBuilder graphBuilder(String input) {
 
     ComputationGraphConfiguration.GraphBuilder graph = new NeuralNetConfiguration.Builder()
+        .workspaceMode(WorkspaceMode.SINGLE)
         .seed(seed)
         .iterations(iterations)
         .activation(Activation.RELU)
