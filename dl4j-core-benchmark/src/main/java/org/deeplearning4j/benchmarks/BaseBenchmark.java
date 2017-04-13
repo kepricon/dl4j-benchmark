@@ -15,7 +15,7 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.parallelism.ParallelWrapper;
-import org.nd4j.jita.conf.CudaEnvironment;
+//import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -73,16 +73,18 @@ public abstract class BaseBenchmark implements Benchmarkable {
         }
 
         // memory management optimizations
-        CudaEnvironment.getInstance().getConfiguration()
-                .allowMultiGPU(numGPUs > 1 ? true : false)
-                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
-                .allowCrossDeviceAccess(true)
-                .setMaximumDeviceCacheableLength(deviceCacheLength * 1024L * 1024L)
-                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
-                .setNumberOfGcThreads(gcThreads);
-
+//        CudaEnvironment
+//                .getInstance()
+//                .getConfiguration()
+//                .allowMultiGPU(numGPUs > 1 ? true : false)
+//                .setMaximumDeviceCache(deviceCache * 1024L * 1024L * 1024L)
+//                .allowCrossDeviceAccess(true)
+//                .setMaximumDeviceCacheableLength(deviceCacheLength * 1024L * 1024L)
+//                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
+//                .setNumberOfGcThreads(gcThreads);
+//
         Nd4j.create(1);
-        Nd4j.getMemoryManager().togglePeriodicGc(true);
+        Nd4j.getMemoryManager().togglePeriodicGc(false);
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
         Nd4j.getMemoryManager().setOccasionalGcFrequency(0);
     }

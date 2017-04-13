@@ -1,17 +1,15 @@
 package org.deeplearning4j.benchmarks;
 
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
 import org.datavec.image.loader.CifarLoader;
 import org.datavec.image.transform.FlipImageTransform;
 import org.datavec.image.transform.ImageTransform;
 import org.deeplearning4j.datasets.iterator.impl.CifarDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
+
+//import org.nd4j.jita.conf.CudaEnvironment;
 
 /**
  * Benchmarks popular CNN models using the CIFAR-10 dataset.

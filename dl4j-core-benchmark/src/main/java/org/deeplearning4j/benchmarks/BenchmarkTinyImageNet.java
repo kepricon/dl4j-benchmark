@@ -17,7 +17,7 @@ import java.io.File;
 public class BenchmarkTinyImageNet extends BaseBenchmark {
     // values to pass in from command line when compiled, esp running remotely
     @Parameter(names = {"-model","--modelType"}, description = "Model type (e.g. ALEXNET, VGG16, or CNN).")
-    public ModelType modelType = ModelType.ALEXNET;
+    public ModelType modelType = ModelType.VGG16;
 
     @Parameter(names = {"-w","--width"}, description = "Set WIDTH_SIZE.")
     private int width = 224;

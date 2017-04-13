@@ -1,8 +1,6 @@
 package org.deeplearning4j.benchmarks;
 
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
 import org.datavec.api.io.filters.BalancedPathFilter;
 import org.datavec.api.io.filters.PathFilter;
@@ -17,8 +15,6 @@ import org.datavec.image.transform.ImageTransform;
 import org.datavec.image.transform.ResizeImageTransform;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.nd4j.jita.conf.CudaEnvironment;
-import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.util.Random;

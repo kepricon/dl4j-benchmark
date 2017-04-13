@@ -1,16 +1,11 @@
 package org.deeplearning4j.benchmarks;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.datasets.MnistDataSetBuilder;
 import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.util.ArrayList;
