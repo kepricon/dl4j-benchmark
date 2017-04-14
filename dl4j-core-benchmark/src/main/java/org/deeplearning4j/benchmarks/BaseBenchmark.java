@@ -147,7 +147,7 @@ public abstract class BaseBenchmark implements Benchmarkable {
             } else { // multiple gpu mode
                 numGPUs = (numGPUs == -1) ? Nd4j.getAffinityManager().getNumberOfDevices() : numGPUs;
                 ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
-                        .prefetchBuffer(numGPUs)
+                        .prefetchBuffer(4)
                         .reportScoreAfterAveraging(true)
                         .averagingFrequency(10)
                         .useLegacyAveraging(false)
