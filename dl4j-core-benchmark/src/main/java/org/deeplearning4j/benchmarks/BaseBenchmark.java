@@ -151,7 +151,7 @@ public abstract class BaseBenchmark implements Benchmarkable {
                         .reportScoreAfterAveraging(true)
                         .averagingFrequency(10)
                         .useLegacyAveraging(false)
-                        .useMQ(false)
+                        .useMQ(true)
                         .workers(numGPUs)
                         .averageUpdaters(false)
                         .build();
