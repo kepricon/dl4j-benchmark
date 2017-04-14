@@ -47,6 +47,8 @@ public class TinyImageNetDataSetBuilder {
     private static int channel = 3;
     @Parameter(names = {"-b","--batch"}, description = "BATCH_SIZE")
     private static int batchSize = 32;
+    @Parameter(names = {"-m","--maxBatch"}, description = "MAX_EXAMPLE_BATCH_SIZE")
+    private static int maxExampleBatches = Integer.MAX_VALUE;
 
     public static final String DATASETNAME = "tiny";
     public static final int numLabels = 200;
@@ -101,6 +103,9 @@ public class TinyImageNetDataSetBuilder {
 
             AtomicInteger counter = new AtomicInteger(0);
             while(trainData.hasNext()){
+                if (counter.intValue() > maxExampleBatches) {
+                    break;
+                }
                 String path = FilenameUtils.concat(TRAIN_PATH, "dataset-" + (counter.getAndIncrement()) + ".bin");
                 trainData.next().save(new File(path));
 
