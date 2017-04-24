@@ -29,10 +29,10 @@ $ java -cp dl4j-core-benchmark/dl4j-core-benchmark.jar org.deeplearning4j.benchm
 
 #### Benchmark Details
 
-**MLP**
-input : 64x784
-Total Params : 1796010
-Total Layers : 3
+[**MLP**](#mlp)
+- Input : 64x784
+- Total Params : 1796010
+- Total Layers : 3
 
 |                       | CPU       | GPU       | Multi   |
 | --------------------- |:---------:| ---------:| -------:|
@@ -42,10 +42,10 @@ Total Layers : 3
 | Avg Samples/sec       | 1429.2    | 11491.08  | 23389.24|
 | Avg Batches/sec       | 22.33     | 179.55    | 366.79  |
 
-**LeNet**
-input : 64x1x28x28
-Total Params : 431080
-Total Layers : 6
+[**LeNet**](#lenet)
+- Input : 64x1x28x28
+- Total Params : 431080
+- Total Layers : 6
 
 |                       | CPU       | GPU       | Multi   |
 | --------------------- |:---------:| ---------:| -------:|
@@ -55,10 +55,10 @@ Total Layers : 6
 | Avg Samples/sec       | 420.51    | 10280.08  | 20531.8 |
 | Avg Batches/sec       | 6.57      | 160.63    | 321.14  |
 
-**LSTM**
-input : 64x300x256
-Total Params : 571650
-Total Layers : 2
+[**LSTM**](#lstm)
+- Input : 64x300x256
+- Total Params : 571650
+- Total Layers : 2
 
 |                       | CPU       | GPU       | Multi   |
 | --------------------- |:---------:| ---------:| -------:|
@@ -69,10 +69,10 @@ Total Layers : 2
 | Avg Batches/sec       | 0.18      | 0.77      | 2.97    |
 
 
-**AlexNet**
-input : 32x3x224x224
-Total Params : 59100744
-Total Layers : 13
+[**AlexNet**](#alexnet)
+- Input : 32x3x224x224
+- Total Params : 59100744
+- Total Layers : 13
 
 |                       | CPU       | GPU       | Multi   |
 | --------------------- |:---------:| ---------:| -------:|
@@ -84,9 +84,9 @@ Total Layers : 13
 
 
 [**INCEPTIONRESNETV1**](#inceptionv1)
-input : 32x3x160x160
-Total Params : 16003768
-Total Layers : 301
+- Input : 32x3x160x160
+- Total Params : 16003768
+- Total Layers : 301
 
 |                       | CPU       | GPU       | Multi   |
 | --------------------- |:---------:| ---------:| -------:|
@@ -96,14 +96,14 @@ Total Layers : 301
 | Avg Samples/sec       | 1.85      | 56.07     | 148.72  |
 | Avg Batches/sec       | 0.06      | 1.75      | 4.63    |
 
-**[VGG16](#vgg16)**
-input : 32x3x224x224
-Total Params : 135079944
-Total Layers : 21
+[**VGG16**](#vgg16)
+- Input : 32x3x224x224
+- Total Params : 135079944
+- Total Layers : 21
 
 |                       | CPU       | GPU       | Multi   |
 | --------------------- |:---------:| ---------:| -------:|
-|  Avg Feedforward (ms) | 14452.92  | 1245.66   |         |
+| Avg Feedforward (ms)  | 14452.92  | 1245.66   |         |
 | Avg Backprop (ms)     | 40445.12  | 2834.26   |         |
 | Avg Iteration (ms)    | 52013.42  | 6299.24   |         |
 | Avg Samples/sec       | 0.52      | 5.03      | 13.1    |
@@ -115,30 +115,27 @@ Total Layers : 21
 
 #APPENDIX
 
-**MLP**
+<a href="mlp">**MLP**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/mlp/SimpleMLP.java)
 Networks Summary : [here](https://gist.github.com/kepricon/622fc5f6131b2f6fdbf02e755bcb0d7b)
 
-**LeNet**
+<a href="lenet">**LeNet**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/LeNet.java)
 Networks Summary : [here](https://gist.github.com/kepricon/86f76610dbf6c8f629c53a6d1cbccc8e)
 
-**LSTM**
+<a href="lstm">**LSTM**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/rnn/W2VSentiment.java)
 Networks Summary : [here](https://gist.github.com/kepricon/8637248febfa41350f89643695ba6a1b)
 
-
-**AlexNet**
+<a href="alexnet">**AlexNet**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/master/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/AlexNet.java)
 Reference: https://www.cs.toronto.edu/~kriz/imagenet_classification_with_deep_convolutional.pdf
 Networks Summary : [here](https://gist.github.com/kepricon/f3184026890024bc44f73da22d1fed27)
 
-
-**VGG16**
+<a href="vgg16">**VGG16**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/master/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/VGG16.java)
 Reference: https://arxiv.org/pdf/1409.1556.pdf
 Networks Summary : [here](https://gist.github.com/kepricon/3ae1776656432382cf02c1c8f110c98d)
-
 
 <a name="inceptionv1">**INCEPTIONRESNETV1**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/master/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/InceptionResNetV1.java)
