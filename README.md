@@ -115,24 +115,24 @@ $ java -cp dl4j-core-benchmark/dl4j-core-benchmark.jar org.deeplearning4j.benchm
 
 #APPENDIX
 
-<a href="mlp">**MLP**</a>
+<a name="mlp">**MLP**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/mlp/SimpleMLP.java)
 Networks Summary : [here](https://gist.github.com/kepricon/622fc5f6131b2f6fdbf02e755bcb0d7b)
 
-<a href="lenet">**LeNet**</a>
+<a name="lenet">**LeNet**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/LeNet.java)
 Networks Summary : [here](https://gist.github.com/kepricon/86f76610dbf6c8f629c53a6d1cbccc8e)
 
-<a href="lstm">**LSTM**</a>
+<a name="lstm">**LSTM**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/rnn/W2VSentiment.java)
 Networks Summary : [here](https://gist.github.com/kepricon/8637248febfa41350f89643695ba6a1b)
 
-<a href="alexnet">**AlexNet**</a>
+<a name="alexnet">**AlexNet**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/master/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/AlexNet.java)
 Reference: https://www.cs.toronto.edu/~kriz/imagenet_classification_with_deep_convolutional.pdf
 Networks Summary : [here](https://gist.github.com/kepricon/f3184026890024bc44f73da22d1fed27)
 
-<a href="vgg16">**VGG16**</a>
+<a name="vgg16">**VGG16**</a>
 Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/master/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/cnn/VGG16.java)
 Reference: https://arxiv.org/pdf/1409.1556.pdf
 Networks Summary : [here](https://gist.github.com/kepricon/3ae1776656432382cf02c1c8f110c98d)
