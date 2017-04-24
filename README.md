@@ -112,8 +112,7 @@ $ java -cp dl4j-core-benchmark/dl4j-core-benchmark.jar org.deeplearning4j.benchm
 
 
 
-
-#APPENDIX
+#### APPENDIX
 
 <a name="mlp">**MLP**</a>
 - Implementation Code : [here](https://github.com/deeplearning4j/dl4j-benchmark/blob/dh_nvidiakr/dl4j-core-benchmark/src/main/java/org/deeplearning4j/models/mlp/SimpleMLP.java)
