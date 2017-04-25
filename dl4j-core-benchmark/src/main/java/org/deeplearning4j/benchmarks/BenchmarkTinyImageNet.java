@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.deeplearning4j.datasets.TinyImageNetDataSetBuilder;
+import org.deeplearning4j.datasets.iterator.ParallelExistingMiniBatchDataSetIterator;
 import org.deeplearning4j.models.ModelType;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -41,7 +42,9 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
             throw new UnsupportedOperationException("TinyImageNet benchmarks are applicable to CNN models only.");
 
         log.info("Loading data...");
-        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(TRAIN_PATH));
+
+//        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(TRAIN_PATH));
+        DataSetIterator train = new ParallelExistingMiniBatchDataSetIterator(new File(TRAIN_PATH), numGPUs);
 //        train = new AsyncDataSetIterator(train);
 
         benchmarkCNN(height, width, channels, TinyImageNetDataSetBuilder.numLabels, batchSize, seed, TinyImageNetDataSetBuilder.DATASETNAME, train, modelType, numGPUs);
