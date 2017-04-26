@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import lombok.extern.slf4j.Slf4j;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.listeners.BenchmarkListener;
 import org.deeplearning4j.listeners.BenchmarkReport;
@@ -13,9 +14,9 @@ import org.deeplearning4j.models.TestableModel;
 import org.deeplearning4j.nn.api.Model;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.deeplearning4j.parallelism.ParallelWrapper;
-//import org.nd4j.jita.conf.CudaEnvironment;
+import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -23,6 +24,8 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+
+//import org.nd4j.jita.conf.CudaEnvironment;
 
 /**
  * Benchmarks popular CNN models using the CIFAR-10 dataset.
@@ -83,6 +86,8 @@ public abstract class BaseBenchmark implements Benchmarkable {
 //                .setMaximumHostCache(hostCache * 1024L * 1024L * 1024L)
 //                .setNumberOfGcThreads(gcThreads);
 //
+
+
         Nd4j.create(1);
         Nd4j.getMemoryManager().togglePeriodicGc(false);
         Nd4j.getMemoryManager().setAutoGcWindow(gcWindow);
@@ -134,7 +139,8 @@ public abstract class BaseBenchmark implements Benchmarkable {
             report.setDescription(description);
             report.setModel(model);
 
-            model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
+//            model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
+            model.setListeners(new PerformanceListener(listenerFreq), new BenchmarkListener(report));
 
             long epochTime = System.currentTimeMillis();
             log.info("===== Benchmarking training iteration =====");
@@ -182,46 +188,48 @@ public abstract class BaseBenchmark implements Benchmarkable {
 
     private void calcFwdBwdTime(Model model, DataSetIterator iter, BenchmarkReport report) throws Exception {
         iter.reset(); // prevents NPE
+        AsyncDataSetIterator adsi = new AsyncDataSetIterator(iter, 8, true);
         long totalForward = 0;
         long totalBackward = 0;
         long nIterations = 0;
 
-        while(iter.hasNext()) {
-            DataSet ds = iter.next();
+        while(adsi.hasNext()) {
+            DataSet ds = adsi.next();
             INDArray input = ds.getFeatures();
             INDArray labels = ds.getLabels();
+            try (MemoryWorkspace workspace = Nd4j.getWorkspaceManager().getAndActivateWorkspace(ComputationGraph.workspaceExternal)) {
+                // forward
+                long forwardTime = System.currentTimeMillis();
+                if (model instanceof MultiLayerNetwork) {
+                    ((MultiLayerNetwork) model).setInput(input);
+                    ((MultiLayerNetwork) model).setLabels(labels);
+                    ((MultiLayerNetwork) model).feedForward();
+                } else if (model instanceof ComputationGraph) {
+                    ((ComputationGraph) model).setInput(0, input);
+                    ((ComputationGraph) model).setLabel(0, labels);
+                    ((ComputationGraph) model).feedForward();
+                }
+                forwardTime = System.currentTimeMillis() - forwardTime;
+                totalForward += forwardTime;
 
-            // forward
-            long forwardTime = System.currentTimeMillis();
-            if(model instanceof MultiLayerNetwork){
-                ((MultiLayerNetwork) model).setInput(input);
-                ((MultiLayerNetwork) model).setLabels(labels);
-                ((MultiLayerNetwork) model).feedForward();
-            }else if(model instanceof ComputationGraph){
-                ((ComputationGraph) model).setInput(0, input);
-                ((ComputationGraph) model).setLabel(0, labels);
-                ((ComputationGraph) model).feedForward();
+                // backward
+                long backwardTime = System.currentTimeMillis();
+                if (model instanceof MultiLayerNetwork) {
+                    Method m = MultiLayerNetwork.class.getDeclaredMethod("backprop"); // requires reflection
+                    m.setAccessible(true);
+                    m.invoke(model);
+                } else if (model instanceof ComputationGraph) {
+                    Method m = ComputationGraph.class.getDeclaredMethod("calcBackpropGradients", boolean.class, INDArray[].class);
+                    m.setAccessible(true);
+                    m.invoke(model, false, new INDArray[0]);
+                }
+
+                backwardTime = System.currentTimeMillis() - backwardTime;
+                totalBackward += backwardTime;
+
+                nIterations += 1;
+                if (nIterations % 100 == 0) log.info("Completed " + nIterations + " iterations");
             }
-            forwardTime = System.currentTimeMillis() - forwardTime;
-            totalForward += forwardTime;
-
-            // backward
-            long backwardTime = System.currentTimeMillis();
-            if(model instanceof MultiLayerNetwork){
-                Method m = MultiLayerNetwork.class.getDeclaredMethod("backprop"); // requires reflection
-                m.setAccessible(true);
-                m.invoke(model);
-            }else if(model instanceof ComputationGraph){
-                Method m = ComputationGraph.class.getDeclaredMethod("calcBackpropGradients", boolean.class, INDArray[].class);
-                m.setAccessible(true);
-                m.invoke(model, false, new INDArray[0]);
-            }
-
-            backwardTime = System.currentTimeMillis() - backwardTime;
-            totalBackward += backwardTime;
-
-            nIterations += 1;
-            if(nIterations % 100 == 0) log.info("Completed "+nIterations+" iterations");
         }
 
         report.setAvgFeedForward((double) totalForward / (double) nIterations);
