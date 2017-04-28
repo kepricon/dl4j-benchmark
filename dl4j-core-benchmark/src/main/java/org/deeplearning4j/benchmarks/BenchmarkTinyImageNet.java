@@ -3,19 +3,36 @@ package org.deeplearning4j.benchmarks;
 import com.beust.jcommander.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.datavec.api.split.FileSplit;
+import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.TinyImageNetDataSetBuilder;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.datasets.iterator.ParallelExistingMiniBatchDataSetIterator;
 import org.deeplearning4j.models.ModelType;
 import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 
 import java.io.File;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Created by kepricon on 17. 3. 31.
  */
 @Slf4j
 public class BenchmarkTinyImageNet extends BaseBenchmark {
+    private static final String DATA_URL = "http://cs231n.stanford.edu/tiny-imagenet-200.zip";
+    private static final String DATA_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "tiny-imagenet");
+    private static final String DATA_ROOT_DIR = FilenameUtils.concat(DATA_PATH, "tiny-imagenet-200/");
+    private static final String LABEL_ID_FILE = DATA_ROOT_DIR + "wnids.txt";
+    private static final String LABEL_NAME_FILE = DATA_ROOT_DIR + "words.txt";
+    private static final String TRAIN_DIR = DATA_ROOT_DIR + "train/";
+    private static final String VALIDATION_DIR = DATA_ROOT_DIR + "val/";
+    private static final String VALIDATION_ANNOTATION_FILE = DATA_ROOT_DIR + "val/val_annotations.txt";
+    private static final String[] allowedExtensions = new String[]{"JPEG"};
+
+
     // values to pass in from command line when compiled, esp running remotely
     @Parameter(names = {"-model","--modelType"}, description = "Model type (e.g. ALEXNET, VGG16, or CNN).")
     public ModelType modelType = ModelType.VGG16;
@@ -44,8 +61,18 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
         log.info("Loading data...");
 
 //        DataSetIterator train = new ExistingMiniBatchDataSetIterator(new File(TRAIN_PATH));
-        DataSetIterator train = new ParallelExistingMiniBatchDataSetIterator(new File(TRAIN_PATH), numGPUs);
+//        DataSetIterator train = new ParallelExistingMiniBatchDataSetIterator(new File(TRAIN_PATH), numGPUs);
 //        train = new AsyncDataSetIterator(train);
+
+        Random r = new Random(12345);
+        FileSplit trainSplit = new FileSplit(new File(TRAIN_DIR), allowedExtensions, r);
+        List<String> labelIDs = TinyImageNetDataSetBuilder.loadLabels(LABEL_ID_FILE);
+        ImageRecordReader trainReader = new ImageRecordReader(height,width,channels,new TinyImageNetDataSetBuilder.TrainLabelGenerator(labelIDs));
+        trainReader.initialize(trainSplit);
+        trainReader.setLabels(labelIDs);
+
+        DataSetIterator train = new RecordReaderDataSetIterator(trainReader, batchSize, 1, 200);
+        train.setPreProcessor(new ImagePreProcessingScaler(-1,1,8));
 
         benchmarkCNN(height, width, channels, TinyImageNetDataSetBuilder.numLabels, batchSize, seed, TinyImageNetDataSetBuilder.DATASETNAME, train, modelType, numGPUs);
     }
