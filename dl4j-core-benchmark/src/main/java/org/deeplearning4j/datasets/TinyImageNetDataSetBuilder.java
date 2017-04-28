@@ -200,7 +200,7 @@ public class TinyImageNetDataSetBuilder {
         log.info("\n" + fileCount + " files and " + dirCount + " directories extracted to: " + outputPath);
     }
 
-    private static List<String> loadLabels(String path) throws IOException {
+    public static List<String> loadLabels(String path) throws IOException {
         List<String> lines = FileUtils.readLines(new File(path));
         List<String> out = new ArrayList<>(200);
         for(String s : lines){
@@ -226,7 +226,7 @@ public class TinyImageNetDataSetBuilder {
         return out;
     }
 
-    private static class TrainLabelGenerator implements PathLabelGenerator {
+    public static class TrainLabelGenerator implements PathLabelGenerator {
         private Map<String,Integer> labelIdxs;
 
         public TrainLabelGenerator(List<String> labels) throws IOException {
