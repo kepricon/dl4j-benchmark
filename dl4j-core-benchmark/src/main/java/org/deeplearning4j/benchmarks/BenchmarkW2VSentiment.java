@@ -17,7 +17,7 @@ public class BenchmarkW2VSentiment extends BaseBenchmark {
 
     // values to pass in from command line when compiled, esp running remotely
     @Parameter(names = {"-model","--modelType"}, description = "Model type (e.g. ALEXNET, VGG16, or CNN).")
-    public static ModelType modelType = ModelType.ALEXNET;
+    public static ModelType modelType = ModelType.W2VSENTIMENT;
 
     protected String datasetName  = "IMDB review";
 
