@@ -140,7 +140,8 @@ public abstract class BaseBenchmark implements Benchmarkable {
             report.setModel(model);
 
 //            model.setListeners(new ScoreIterationListener(listenerFreq), new BenchmarkListener(report));
-            model.setListeners(new PerformanceListener(listenerFreq), new BenchmarkListener(report));
+//            model.setListeners(new PerformanceListener(listenerFreq), new BenchmarkListener(report));
+            model.setListeners(new PerformanceListener(1, false), new BenchmarkListener(report));
 
             long epochTime = System.currentTimeMillis();
             log.info("===== Benchmarking training iteration =====");
