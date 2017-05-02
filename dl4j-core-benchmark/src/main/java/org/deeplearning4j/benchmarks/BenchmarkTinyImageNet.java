@@ -7,15 +7,17 @@ import org.datavec.api.split.FileSplit;
 import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.TinyImageNetDataSetBuilder;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
-//import org.deeplearning4j.datasets.iterator.ParallelExistingMiniBatchDataSetIterator;
+import org.deeplearning4j.datasets.iterator.callbacks.DataSetDeserializer;
+import org.deeplearning4j.datasets.iterator.parallel.FileSplitParallelDataSetIterator;
 import org.deeplearning4j.models.ModelType;
-import org.nd4j.linalg.dataset.ExistingMiniBatchDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 
 import java.io.File;
 import java.util.List;
 import java.util.Random;
+
+//import org.deeplearning4j.datasets.iterator.ParallelExistingMiniBatchDataSetIterator;
 
 /**
  * Created by kepricon on 17. 3. 31.
@@ -64,15 +66,18 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
 //        DataSetIterator train = new ParallelExistingMiniBatchDataSetIterator(new File(TRAIN_PATH), numGPUs);
 //        train = new AsyncDataSetIterator(train);
 
-        Random r = new Random(12345);
-        FileSplit trainSplit = new FileSplit(new File(TRAIN_DIR), allowedExtensions, r);
-        List<String> labelIDs = TinyImageNetDataSetBuilder.loadLabels(LABEL_ID_FILE);
-        ImageRecordReader trainReader = new ImageRecordReader(height,width,channels,new TinyImageNetDataSetBuilder.TrainLabelGenerator(labelIDs));
-        trainReader.initialize(trainSplit);
-        trainReader.setLabels(labelIDs);
 
-        DataSetIterator train = new RecordReaderDataSetIterator(trainReader, batchSize, 1, 200);
-        train.setPreProcessor(new ImagePreProcessingScaler(-1,1,8));
+        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer());
+
+//        Random r = new Random(12345);
+//        FileSplit trainSplit = new FileSplit(new File(TRAIN_DIR), allowedExtensions, r);
+//        List<String> labelIDs = TinyImageNetDataSetBuilder.loadLabels(LABEL_ID_FILE);
+//        ImageRecordReader trainReader = new ImageRecordReader(height,width,channels,new TinyImageNetDataSetBuilder.TrainLabelGenerator(labelIDs));
+//        trainReader.initialize(trainSplit);
+//        trainReader.setLabels(labelIDs);
+//
+//        DataSetIterator train = new RecordReaderDataSetIterator(trainReader, batchSize, 1, 200);
+//        train.setPreProcessor(new ImagePreProcessingScaler(-1,1,8));
 
         benchmarkCNN(height, width, channels, TinyImageNetDataSetBuilder.numLabels, batchSize, seed, TinyImageNetDataSetBuilder.DATASETNAME, train, modelType, numGPUs);
     }
