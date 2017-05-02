@@ -55,7 +55,8 @@ public class AlexNet implements TestableModel {
         double dropOut = 0.5;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .workspaceMode(WorkspaceMode.SINGLE)
+                .trainingWorkspaceMode(WorkspaceMode.SEPARATE)
+                .inferenceWorkspaceMode(WorkspaceMode.SEPARATE)
                 .seed(seed)
                 .weightInit(WeightInit.DISTRIBUTION)
                 .dist(new NormalDistribution(0.0, 0.01))

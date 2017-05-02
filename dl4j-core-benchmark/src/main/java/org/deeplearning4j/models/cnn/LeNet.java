@@ -44,11 +44,13 @@ public class LeNet implements TestableModel {
     public MultiLayerConfiguration conf() {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .workspaceMode(WorkspaceMode.SINGLE)
+                .trainingWorkspaceMode(WorkspaceMode.SEPARATE)
+                .inferenceWorkspaceMode(WorkspaceMode.SEPARATE)
                 .seed(seed)
                 .iterations(iterations)
                 .activation(Activation.IDENTITY)
-                .weightInit(WeightInit.XAVIER)
+//                .weightInit(WeightInit.XAVIER)
+                .weightInit(WeightInit.DISTRIBUTION)
                 .learningRate(1e-2)//.biasLearningRate(2e-2)
                 //.learningRateDecayPolicy(LearningRatePolicy.Inverse).lrPolicyDecayRate(0.001).lrPolicyPower(0.75)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
