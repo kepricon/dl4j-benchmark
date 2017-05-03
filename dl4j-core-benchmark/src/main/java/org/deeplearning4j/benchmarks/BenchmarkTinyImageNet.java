@@ -11,6 +11,7 @@ import org.deeplearning4j.datasets.iterator.callbacks.DataSetDeserializer;
 import org.deeplearning4j.datasets.iterator.parallel.FileSplitParallelDataSetIterator;
 import org.deeplearning4j.models.ModelType;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.iterator.enums.InequalityHandling;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 
 import java.io.File;
@@ -67,7 +68,8 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
 //        train = new AsyncDataSetIterator(train);
 
 
-        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer());
+//        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer());
+        FileSplitParallelDataSetIterator train = FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer(), numGPUs, 10, InequalityHandling.STOP_EVERYONE);
 
 //        Random r = new Random(12345);
 //        FileSplit trainSplit = new FileSplit(new File(TRAIN_DIR), allowedExtensions, r);
