@@ -69,7 +69,7 @@ public class BenchmarkTinyImageNet extends BaseBenchmark {
 
 
 //        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer());
-        FileSplitParallelDataSetIterator train = FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer(), numGPUs, 10, InequalityHandling.STOP_EVERYONE);
+        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer(), numGPUs, 10, InequalityHandling.STOP_EVERYONE);
 
 //        Random r = new Random(12345);
 //        FileSplit trainSplit = new FileSplit(new File(TRAIN_DIR), allowedExtensions, r);
