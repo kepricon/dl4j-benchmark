@@ -3,17 +3,21 @@ package org.deeplearning4j.benchmarks;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.deeplearning4j.datasets.TinyImageNetDataSetBuilder;
 import org.deeplearning4j.datasets.iterator.callbacks.DataSetDeserializer;
 import org.deeplearning4j.datasets.iterator.parallel.FileSplitParallelDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.enums.InequalityHandling;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by kepricon on 17. 5. 3.
  */
+@Slf4j
 public class RaverTest {
     @Parameter(names = {"-w","--width"}, description = "Set WIDTH_SIZE.")
     private int width = 224;
@@ -48,9 +52,14 @@ public class RaverTest {
 
         FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer(), numGPUs, 10, InequalityHandling.STOP_EVERYONE);
 
+        int numDevices = Nd4j.getAffinityManager().getNumberOfDevices();
+        AtomicLong cnt = new AtomicLong(0);
+        log.info("Calling hasNext() on device_{}", cnt.getAndIncrement() % numDevices);
         while(train.hasNext()) {
             train.next();
             Thread.sleep(100);
+
+            log.info("Calling next on device_{}", cnt.getAndIncrement() % numDevices);
         }
     }
 
