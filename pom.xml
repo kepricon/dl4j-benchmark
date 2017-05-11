@@ -39,7 +39,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <nd4j.backend>nd4j-native-platform</nd4j.backend>
+                <nd4j.backend>nd4j-native</nd4j.backend>
             </properties>
         </profile>
         <profile>
@@ -48,7 +48,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend>
+                <nd4j.backend>nd4j-cuda-8.0</nd4j.backend>
             </properties>
         </profile>
         <profile>
@@ -57,7 +57,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <nd4j.backend>nd4j-cuda-8.0-platform</nd4j.backend>
+                <nd4j.backend>nd4j-cuda-8.0</nd4j.backend>
             </properties>
             <dependencies>
                 <dependency>
