@@ -28,7 +28,7 @@ public class RaverTest {
     @Parameter(names = {"-b","--batch"}, description = "Set BATCH_SIZE.")
     private int batchSize = 32;
     @Parameter(names = {"-ng","--numGPUs"}, description = "How many workers to use for multiple GPUs.")
-    protected int numGPUs = 0;
+    protected int numGPUs = Nd4j.getAffinityManager().getNumberOfDevices();
 
     public String TRAIN_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_train/");
     public String TEST_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_tinyimagenet_test/");
@@ -50,7 +50,7 @@ public class RaverTest {
         TRAIN_PATH = TinyImageNetDataSetBuilder.getTrainPath(height, width, batchSize);
         TEST_PATH = TinyImageNetDataSetBuilder.getTestPath(height, width, batchSize);
 
-        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer(), numGPUs, 10, InequalityHandling.STOP_EVERYONE);
+        FileSplitParallelDataSetIterator train = new FileSplitParallelDataSetIterator(new File(TRAIN_PATH), "dataset-%d.bin", new DataSetDeserializer(), numGPUs, 4, InequalityHandling.STOP_EVERYONE);
 
         int numDevices = Nd4j.getAffinityManager().getNumberOfDevices();
         AtomicLong cnt = new AtomicLong(0);
