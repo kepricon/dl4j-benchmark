@@ -156,7 +156,7 @@ public abstract class BaseBenchmark implements Benchmarkable {
                 ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
                         .prefetchBuffer(4)
                         .reportScoreAfterAveraging(true)
-                        .averagingFrequency(10)
+                        .averagingFrequency(5)
                         .useLegacyAveraging(false)
                         .useMQ(true)
                         .workers(numGPUs)
