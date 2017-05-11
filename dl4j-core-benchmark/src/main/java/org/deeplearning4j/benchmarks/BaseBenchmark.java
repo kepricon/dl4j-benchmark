@@ -47,6 +47,9 @@ public abstract class BaseBenchmark implements Benchmarkable {
     @Parameter(names = {"-miter","--maxIteration"}, description = "Max Iteration. -1 means no limit")
     protected long maxIteration = -1;
 
+    @Parameter(names = {"-avg","--averagingFrequency"}, description = "Averaging frequency")
+    protected int averagingFrequency = 5;
+
     protected int listenerFreq = 10;
     protected int iterations = 1;
     protected static Map<ModelType,TestableModel> networks;
@@ -156,7 +159,7 @@ public abstract class BaseBenchmark implements Benchmarkable {
                 ParallelWrapper pw = new ParallelWrapper.Builder<>(model)
                         .prefetchBuffer(4)
                         .reportScoreAfterAveraging(true)
-                        .averagingFrequency(5)
+                        .averagingFrequency(averagingFrequency)
                         .useLegacyAveraging(false)
                         .useMQ(true)
                         .workers(numGPUs)
