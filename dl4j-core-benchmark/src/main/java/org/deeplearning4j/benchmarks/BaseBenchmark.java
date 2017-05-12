@@ -146,6 +146,14 @@ public abstract class BaseBenchmark implements Benchmarkable {
 //            model.setListeners(new PerformanceListener(listenerFreq), new BenchmarkListener(report));
             model.setListeners(new PerformanceListener(1, false), new BenchmarkListener(report));
 
+            if (model instanceof ComputationGraph) {
+                log.info("Network params: {}", model.params().lengthLong());
+                log.info("Updater params: {}", ((ComputationGraph) model).getUpdater().getStateViewArray().lengthLong());
+            } else if (model instanceof MultiLayerNetwork) {
+                log.info("Network params: {}", model.params().lengthLong());
+                log.info("Updater params: {}", ((MultiLayerNetwork) model).getUpdater().getStateViewArray().lengthLong());
+            }
+
             long epochTime = System.currentTimeMillis();
             log.info("===== Benchmarking training iteration =====");
             if (numGPUs == 0 || numGPUs == 1) { // cpu mode or single gpu mode
